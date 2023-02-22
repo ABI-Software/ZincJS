@@ -1,6 +1,6 @@
 {
   "name": "zincjs",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "ZincJS (Web-based-Zinc-Visualisation)",
   "main": "build/zinc.js",
   "directories": {
@@ -13,7 +13,8 @@
     "build/zinc.js",
     "build/zinc.frontend.js",
     "build/zinc.js.map",
-    "webpack.config.js"
+    "webpack.config.js",
+    "src/shaders"
   ],
   "scripts": {
     "build-bundle": "webpack --config webpack.frontend.js; webpack --config webpack.backend.js",
