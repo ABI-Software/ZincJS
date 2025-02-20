@@ -5,6 +5,7 @@ const SceneExporter = require('./sceneExporter').SceneExporter;
 const Viewport = require('./controls').Viewport;
 const createBufferGeometry = require('./utilities').createBufferGeometry;
 const getCircularTexture = require('./utilities').getCircularTexture;
+const createNewSpriteText = require('./utilities').createNewSpriteText;
 let uniqueiId = 0;
 
 const getUniqueId = function () {
@@ -1383,6 +1384,14 @@ exports.Scene = function (containerIn, rendererIn) {
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
         scene.add(arrowHelper);
+
+    if (label) {
+      XYZ.forEach((xyzObj) => {
+        const xyzLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
+        const position = xyzObj.dir.clone().multiplyScalar(size);
+        xyzLabel.position.set(position.x, position.y, position.z);
+        scene.add(xyzLabel);
+        coordSystem.label.push(xyzLabel);
       })
     }
   }
