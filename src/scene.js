@@ -1350,6 +1350,42 @@ exports.Scene = function (containerIn, rendererIn) {
     }
     this.forcePickableObjectsUpdate = true;
   }
+
+  this.enableCoordSystem = (type = "axes", label = true) => {
+    const XYZ = [
+      {
+        name: "X",
+        dir: new THREE.Vector3(1, 0, 0),
+        colour: "red",
+        hex: 0xFF5555
+      },
+      {
+        name: "Y",
+        dir: new THREE.Vector3(0, 1, 0),
+        colour: "green",
+        hex: 0x55FF55
+      },
+      {
+        name: "Z",
+        dir: new THREE.Vector3(0, 0, 1),
+        colour: "blue",
+        hex: 0x5555FF
+      }
+    ]
+    const boundingBox = this.getBoundingBox()
+    const size = boundingBox.min.distanceTo(boundingBox.max)
+
+    if (type === "axes") {
+      const axesHelper = new THREE.AxesHelper(size)
+      scene.add(axesHelper);
+    } else if (type === "arrow") {
+      const origin = new THREE.Vector3(0, 0, 0);
+      XYZ.forEach((xyzObj) => {
+        const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
+        scene.add(arrowHelper);
+      })
+    }
+  }
 }
 
 
