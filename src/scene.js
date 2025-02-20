@@ -81,6 +81,11 @@ exports.Scene = function (containerIn, rendererIn) {
   let markerCluster = new MarkerCluster(this);
   markerCluster.disable();
   scene.add(markerCluster.group);
+  let coordSystem = {
+    axes: [],
+    arrow: [],
+    label: []
+  }
 
   const getDrawingWidth = () => {
     if (container)
@@ -1379,11 +1384,15 @@ exports.Scene = function (containerIn, rendererIn) {
     if (type === "axes") {
       const axesHelper = new THREE.AxesHelper(size)
       scene.add(axesHelper);
+      coordSystem.axes.push(axesHelper);
     } else if (type === "arrow") {
       const origin = new THREE.Vector3(0, 0, 0);
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
         scene.add(arrowHelper);
+        coordSystem.arrow.push(arrowHelper);
+      })
+    }
 
     if (label) {
       XYZ.forEach((xyzObj) => {
@@ -1394,6 +1403,22 @@ exports.Scene = function (containerIn, rendererIn) {
         coordSystem.label.push(xyzLabel);
       })
     }
+  }
+
+  this.disableCoordSystem = () => {
+    Object.entries(coordSystem).forEach(([key, coordObject]) => {
+      coordObject.forEach((cObj) => {
+        scene.remove(cObj);
+        if (key === "axes") {
+          cObj.geometry.dispose();
+          cObj.material.dispose();
+        } else if (key === "label") {
+          cObj.material.map.dispose();
+          cObj.material.dispose();
+        }
+      })
+      coordSystem[key] = []
+    })
   }
 }
 
