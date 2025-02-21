@@ -1357,6 +1357,7 @@ exports.Scene = function (containerIn, rendererIn) {
     this.forcePickableObjectsUpdate = true;
   }
 
+  this.enableCoordSystem = (type = "axes", fitBoundingBox = false) => {
     const XYZ = [
       {
         name: "X",
@@ -1376,16 +1377,20 @@ exports.Scene = function (containerIn, rendererIn) {
         colour: "blue",
         hex: 0x5555FF
       }
-    ]
-    const boundingBox = this.getBoundingBox()
-    const size = boundingBox.min.distanceTo(boundingBox.max)
+    ];
+    const boundingBox = this.getBoundingBox();
+    const size = boundingBox.min.distanceTo(boundingBox.max);
+    let origin = new THREE.Vector3(0, 0, 0);
+    if (fitBoundingBox) {
+      origin.copy(boundingBox.min);
+    }
 
     if (type === "axes") {
-      const axesHelper = new THREE.AxesHelper(size)
+      const axesHelper = new THREE.AxesHelper(size);
+      axesHelper.position.set(origin.x, origin.y, origin.z);
       scene.add(axesHelper);
       coordSystem.axes.push(axesHelper);
     } else if (type === "arrow") {
-      const origin = new THREE.Vector3(0, 0, 0);
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
         scene.add(arrowHelper);
@@ -1393,6 +1398,13 @@ exports.Scene = function (containerIn, rendererIn) {
       })
     }
 
+    XYZ.forEach((xyzObj) => {
+      const xyzLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
+      const position = xyzObj.dir.clone().multiplyScalar(size).add(origin);
+      xyzLabel.position.set(position.x, position.y, position.z);
+      scene.add(xyzLabel);
+      coordSystem.label.push(xyzLabel);
+    })
   }
 
   this.disableCoordSystem = () => {
@@ -1407,7 +1419,7 @@ exports.Scene = function (containerIn, rendererIn) {
           cObj.material.dispose();
         }
       })
-      coordSystem[key] = []
+      coordSystem[key] = [];
     })
   }
 }
