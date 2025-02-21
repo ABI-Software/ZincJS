@@ -1357,7 +1357,6 @@ exports.Scene = function (containerIn, rendererIn) {
     this.forcePickableObjectsUpdate = true;
   }
 
-  this.enableCoordSystem = (type = "axes", label = true) => {
     const XYZ = [
       {
         name: "X",
@@ -1394,15 +1393,6 @@ exports.Scene = function (containerIn, rendererIn) {
       })
     }
 
-    if (label) {
-      XYZ.forEach((xyzObj) => {
-        const xyzLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
-        const position = xyzObj.dir.clone().multiplyScalar(size);
-        xyzLabel.position.set(position.x, position.y, position.z);
-        scene.add(xyzLabel);
-        coordSystem.label.push(xyzLabel);
-      })
-    }
   }
 
   this.disableCoordSystem = () => {
