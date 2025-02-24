@@ -9,6 +9,7 @@ precision highp int;
 precision highp sampler2DArray;
 
 uniform sampler2DArray diffuse;
+uniform bool discardAlpha;
 in vec3 vUw;
 
 out vec4 outColor;
@@ -18,7 +19,9 @@ void main() {
   vec4 color = texture( diffuse, vUw );
 
   // lighten a bit
-  outColor = vec4( color.rgb + .2, 1.0 );
+  if (discardAlpha && color.a == 0.0) discard;
+
+  outColor = vec4( color.rgba );
 
 }
 `;
@@ -58,6 +61,7 @@ const getUniforms = function() {
     slide: { value: new THREE.Vector3( 0, 0, 1 ) },
     direction: {value: 1},
     flipY: { value: true},
+    discardAlpha: {value: true},
   };
 }
 
