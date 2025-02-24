@@ -43,6 +43,7 @@ exports.Scene = function (containerIn, rendererIn) {
   let zincObjectRemovedCallbacks = {};
   let zincObjectRemovedCallbacks_id = 0;
   const scene = new THREE.Scene();
+  const miniAxesScene = new THREE.Scene();
   const rootRegion = new (require('./region').Region)(undefined, this);
   scene.add(rootRegion.getGroup());
   const tempGroup = new THREE.Group();
@@ -64,6 +65,7 @@ exports.Scene = function (containerIn, rendererIn) {
   this.autoClearFlag = true;
   this.displayMarkers = false;
   this.displayMinimap = false;
+  this.displayMiniAxes = false;
   this.minimapScissor = {
     x_offset: 16,
     y_offset: 16,
@@ -84,7 +86,7 @@ exports.Scene = function (containerIn, rendererIn) {
   let coordSystem = {
     axes: [],
     arrow: [],
-    label: []
+    label: [],
   }
 
   const getDrawingWidth = () => {
@@ -697,9 +699,13 @@ exports.Scene = function (containerIn, rendererIn) {
         this.minimapScissor.width,
         this.minimapScissor.height); 
       minimap.updateCamera();
-      scene.add(minimap.mask);
-      renderer.render(scene, minimap.camera);
-      scene.remove(minimap.mask);
+      if (this.displayMiniAxes) {
+        renderer.render(miniAxesScene, minimap.camera);
+      } else {
+        scene.add(minimap.mask);
+        renderer.render(scene, minimap.camera);
+        scene.remove(minimap.mask);
+      }
       renderer.setScissorTest(false);
       renderer.setViewport(0, 0, _markerTarget.x, _markerTarget.y);
     }
@@ -1357,7 +1363,7 @@ exports.Scene = function (containerIn, rendererIn) {
     this.forcePickableObjectsUpdate = true;
   }
 
-  this.enableCoordSystem = (type = "axes", fitBoundingBox = false) => {
+  this.createCoordSystem = (type = "axes", fitBoundingBox = false) => {
     const XYZ = [
       {
         name: "X",
@@ -1384,33 +1390,58 @@ exports.Scene = function (containerIn, rendererIn) {
     if (fitBoundingBox) {
       origin.copy(boundingBox.min);
     }
-
     if (type === "axes") {
       const axesHelper = new THREE.AxesHelper(size);
       axesHelper.position.set(origin.x, origin.y, origin.z);
-      scene.add(axesHelper);
       coordSystem.axes.push(axesHelper);
     } else if (type === "arrow") {
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
-        scene.add(arrowHelper);
         coordSystem.arrow.push(arrowHelper);
+
       })
     }
-
     XYZ.forEach((xyzObj) => {
-      const xyzLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
+      const axesLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
       const position = xyzObj.dir.clone().multiplyScalar(size).add(origin);
-      xyzLabel.position.set(position.x, position.y, position.z);
-      scene.add(xyzLabel);
-      coordSystem.label.push(xyzLabel);
+      axesLabel.position.set(position.x, position.y, position.z);
+      coordSystem.label.push(axesLabel);
     })
   }
 
-  this.disableCoordSystem = () => {
+  this.enableCoordSystem = (type = "main") => {
+    if (type === "miniaxes") {
+      this.displayMiniAxes = true
+    }
+    Object.values(coordSystem).forEach((coordObject) => {
+      coordObject.forEach((cObj) => {
+        if (type === "main") {
+          scene.add(cObj)
+        } else if (type === "miniaxes") {
+          miniAxesScene.add(cObj)
+        }
+      })
+    })
+  }
+
+  this.disableCoordSystem = (type = "main") => {
+    if (type === "miniaxes") {
+      this.displayMiniAxes = false
+    }
+    Object.values(coordSystem).forEach((coordObject) => {
+      coordObject.forEach((cObj) => {
+        if (type === "main") {
+          scene.remove(cObj)
+        } else if (type === "miniaxes") {
+          miniAxesScene.remove(cObj)
+        }
+      })
+    })
+  }
+
+  this.destroyCoordSystem = () => {
     Object.entries(coordSystem).forEach(([key, coordObject]) => {
       coordObject.forEach((cObj) => {
-        scene.remove(cObj);
         if (key === "axes") {
           cObj.geometry.dispose();
           cObj.material.dispose();
