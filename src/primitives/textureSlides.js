@@ -226,30 +226,32 @@ const TextureSlides = function (textureIn) {
 
   //Expand the boundingbox with slide settings
   const expandBoxWithSettings = (box, settings, vector) => {
-    switch (settings.direction.value) {
-      case 1:
-        vector.copy(settings.slide.value);
-        box.expandByPoint(vector);
-        vector.setY(1.0);
-        vector.setZ(1.0);
-        box.expandByPoint(vector);
-        break;
-      case 2:
-        vector.copy(settings.slide.value);
-        box.expandByPoint(vector);
-        vector.setX(1.0);
-        vector.setZ(1.0);
-        box.expandByPoint(vector);
-        break;
-      case 3:
-        vector.copy(settings.slide.value);
-        box.expandByPoint(vector);
-        vector.setX(1.0);
-        vector.setY(1.0);
-        box.expandByPoint(vector);
-        break;
-      default:
-        break;
+    if (settings) {
+      switch (settings.direction.value) {
+        case 1:
+          vector.copy(settings.slide.value);
+          box.expandByPoint(vector);
+          vector.setY(1.0);
+          vector.setZ(1.0);
+          box.expandByPoint(vector);
+          break;
+        case 2:
+          vector.copy(settings.slide.value);
+          box.expandByPoint(vector);
+          vector.setX(1.0);
+          vector.setZ(1.0);
+          box.expandByPoint(vector);
+          break;
+        case 3:
+          vector.copy(settings.slide.value);
+          box.expandByPoint(vector);
+          vector.setX(1.0);
+          vector.setY(1.0);
+          box.expandByPoint(vector);
+          break;
+        default:
+          break;
+      }
     }
   }
 
