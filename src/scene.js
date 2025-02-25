@@ -86,7 +86,7 @@ exports.Scene = function (containerIn, rendererIn) {
   let coordSystem = {
     axes: [],
     arrow: [],
-    label: [],
+    label: []
   }
 
   const getDrawingWidth = () => {
@@ -676,7 +676,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   const renderMinimap = renderer => {
-    if (this.displayMinimap === true) {
+    if (this.displayMinimap || this.displayMiniAxes) {
       renderer.setScissorTest(true);
       renderer.getSize(_markerTarget);
       if (this.minimapScissor.updateRequired) {
@@ -1398,7 +1398,6 @@ exports.Scene = function (containerIn, rendererIn) {
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
         coordSystem.arrow.push(arrowHelper);
-
       })
     }
     XYZ.forEach((xyzObj) => {
@@ -1409,34 +1408,30 @@ exports.Scene = function (containerIn, rendererIn) {
     })
   }
 
-  this.enableCoordSystem = (type = "main") => {
-    if (type === "miniaxes") {
+  this.enableCoordSystem = (miniaxes = false) => {
+    let currentScene = scene
+    if (miniaxes) {
       this.displayMiniAxes = true
+      currentScene = miniAxesScene
     }
     Object.values(coordSystem).forEach((coordObject) => {
       coordObject.forEach((cObj) => {
-        if (type === "main") {
-          scene.add(cObj)
-        } else if (type === "miniaxes") {
-          miniAxesScene.add(cObj)
-        }
+        currentScene.add(cObj)
       })
     })
   }
 
-  this.disableCoordSystem = (type = "main") => {
-    if (type === "miniaxes") {
+  this.disableCoordSystem = (miniaxes = false) => {
+    if (miniaxes) {
       this.displayMiniAxes = false
-    }
-    Object.values(coordSystem).forEach((coordObject) => {
-      coordObject.forEach((cObj) => {
-        if (type === "main") {
+      miniAxesScene.remove.apply(miniAxesScene, miniAxesScene.children)
+    } else {
+      Object.values(coordSystem).forEach((coordObject) => {
+        coordObject.forEach((cObj) => {
           scene.remove(cObj)
-        } else if (type === "miniaxes") {
-          miniAxesScene.remove(cObj)
-        }
+        })
       })
-    })
+    }
   }
 
   this.destroyCoordSystem = () => {
