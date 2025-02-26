@@ -1412,44 +1412,35 @@ exports.Scene = function (containerIn, rendererIn) {
     })
   }
 
-  this.enableCoordSystem = (miniaxes = false) => {
-    let currentScene = scene
-    if (miniaxes) {
-      this.displayMiniAxes = true
-      currentScene = miniAxesScene
-    }
-    Object.values(coordSystem).forEach((coordObject) => {
-      coordObject.forEach((cObj) => {
-        currentScene.add(cObj)
-      })
-    })
-  }
-
-  this.disableCoordSystem = (miniaxes = false) => {
-    if (miniaxes) {
-      this.displayMiniAxes = false
-      miniAxesScene.remove.apply(miniAxesScene, miniAxesScene.children)
-    } else {
-      Object.values(coordSystem).forEach((coordObject) => {
-        coordObject.forEach((cObj) => {
+  this.enableCoordSystem = (enable, options = { miniaxes: false, erase: false }) => {
+    this.displayMiniAxes = enable && options.miniaxes
+    Object.entries(coordSystem).forEach(([type, coordObjects]) => {
+      coordObjects.forEach((cObj) => {
+        if (type === "main") {
           scene.remove(cObj)
-        })
-      })
-    }
-  }
-
-  this.destroyCoordSystem = () => {
-    Object.entries(coordSystem).forEach(([key, coordObject]) => {
-      coordObject.forEach((cObj) => {
-        if (key === "axes") {
-          cObj.geometry.dispose();
-          cObj.material.dispose();
-        } else if (key === "label") {
-          cObj.material.map.dispose();
-          cObj.material.dispose();
+          if (enable && !options.miniaxes) {
+            scene.add(cObj)
+          }
+        } else if (type === "mini") {
+          miniAxesScene.remove(cObj)
+          if (enable && options.miniaxes) {
+            miniAxesScene.add(cObj)
+          }
+        }
+        if (!enable) {
+          if (cObj.type === "AxesHelper") {
+            cObj.geometry.dispose();
+            cObj.material.dispose();
+          } else if (cObj.type === "ArrowHelper") {
+          } else if (cObj.type === "Sprite") {
+            cObj.material.map.dispose();
+            cObj.material.dispose();
+          }
         }
       })
-      coordSystem[key] = [];
+      if (!enable && options.erase) {
+        coordSystem[type] = [];
+      }
     })
   }
 }
