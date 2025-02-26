@@ -84,9 +84,8 @@ exports.Scene = function (containerIn, rendererIn) {
   markerCluster.disable();
   scene.add(markerCluster.group);
   let coordSystem = {
-    axes: [],
-    arrow: [],
-    label: []
+    main: [],
+    mini: [],
   }
 
   const getDrawingWidth = () => {
@@ -1393,18 +1392,23 @@ exports.Scene = function (containerIn, rendererIn) {
     if (type === "axes") {
       const axesHelper = new THREE.AxesHelper(size);
       axesHelper.position.set(origin.x, origin.y, origin.z);
-      coordSystem.axes.push(axesHelper);
+      coordSystem.main.push(axesHelper);
+      const miniAxesHelper = new THREE.AxesHelper(size / 2);
+      miniAxesHelper.position.set(boundingBox.min.x, boundingBox.min.y, boundingBox.min.z);
+      coordSystem.mini.push(miniAxesHelper);
     } else if (type === "arrow") {
       XYZ.forEach((xyzObj) => {
         const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
-        coordSystem.arrow.push(arrowHelper);
+        coordSystem.main.push(arrowHelper);
+        const miniArrowHelper = new THREE.ArrowHelper(xyzObj.dir, boundingBox.min, size / 2, xyzObj.hex);
+        coordSystem.mini.push(miniArrowHelper);
       })
     }
     XYZ.forEach((xyzObj) => {
       const axesLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
       const position = xyzObj.dir.clone().multiplyScalar(size).add(origin);
       axesLabel.position.set(position.x, position.y, position.z);
-      coordSystem.label.push(axesLabel);
+      coordSystem.main.push(axesLabel);
     })
   }
 
