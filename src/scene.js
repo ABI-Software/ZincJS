@@ -5,6 +5,7 @@ const SceneExporter = require('./sceneExporter').SceneExporter;
 const Viewport = require('./controls').Viewport;
 const createBufferGeometry = require('./utilities').createBufferGeometry;
 const getCircularTexture = require('./utilities').getCircularTexture;
+const createNewSpriteText = require('./utilities').createNewSpriteText;
 let uniqueiId = 0;
 
 const getUniqueId = function () {
@@ -42,6 +43,7 @@ exports.Scene = function (containerIn, rendererIn) {
   let zincObjectRemovedCallbacks = {};
   let zincObjectRemovedCallbacks_id = 0;
   const scene = new THREE.Scene();
+  const miniAxesScene = new THREE.Scene();
   const rootRegion = new (require('./region').Region)(undefined, this);
   scene.add(rootRegion.getGroup());
   const tempGroup = new THREE.Group();
@@ -63,6 +65,7 @@ exports.Scene = function (containerIn, rendererIn) {
   this.autoClearFlag = true;
   this.displayMarkers = false;
   this.displayMinimap = false;
+  this.displayMiniAxes = false;
   this.minimapScissor = {
     x_offset: 16,
     y_offset: 16,
@@ -80,6 +83,10 @@ exports.Scene = function (containerIn, rendererIn) {
   let markerCluster = new MarkerCluster(this);
   markerCluster.disable();
   scene.add(markerCluster.group);
+  let coordSystem = {
+    main: [],
+    mini: [],
+  }
 
   const getDrawingWidth = () => {
     if (container)
@@ -668,7 +675,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   const renderMinimap = renderer => {
-    if (this.displayMinimap === true) {
+    if (this.displayMinimap || this.displayMiniAxes) {
       renderer.setScissorTest(true);
       renderer.getSize(_markerTarget);
       if (this.minimapScissor.updateRequired) {
@@ -691,9 +698,13 @@ exports.Scene = function (containerIn, rendererIn) {
         this.minimapScissor.width,
         this.minimapScissor.height); 
       minimap.updateCamera();
-      scene.add(minimap.mask);
-      renderer.render(scene, minimap.camera);
-      scene.remove(minimap.mask);
+      if (this.displayMiniAxes) {
+        renderer.render(miniAxesScene, minimap.camera);
+      } else {
+        scene.add(minimap.mask);
+        renderer.render(scene, minimap.camera);
+        scene.remove(minimap.mask);
+      }
       renderer.setScissorTest(false);
       renderer.setViewport(0, 0, _markerTarget.x, _markerTarget.y);
     }
@@ -1349,6 +1360,88 @@ exports.Scene = function (containerIn, rendererIn) {
       markerCluster.disable();
     }
     this.forcePickableObjectsUpdate = true;
+  }
+
+  this.createCoordSystem = (type = "axes", fitBoundingBox = false) => {
+    const XYZ = [
+      {
+        name: "X",
+        dir: new THREE.Vector3(1, 0, 0),
+        colour: "red",
+        hex: 0xFF5555
+      },
+      {
+        name: "Y",
+        dir: new THREE.Vector3(0, 1, 0),
+        colour: "green",
+        hex: 0x55FF55
+      },
+      {
+        name: "Z",
+        dir: new THREE.Vector3(0, 0, 1),
+        colour: "blue",
+        hex: 0x5555FF
+      }
+    ];
+    const boundingBox = this.getBoundingBox();
+    const size = boundingBox.min.distanceTo(boundingBox.max);
+    let origin = new THREE.Vector3(0, 0, 0);
+    if (fitBoundingBox) {
+      origin.copy(boundingBox.min);
+    }
+    if (type === "axes") {
+      const axesHelper = new THREE.AxesHelper(size);
+      axesHelper.position.set(origin.x, origin.y, origin.z);
+      coordSystem.main.push(axesHelper);
+      const miniAxesHelper = new THREE.AxesHelper(size / 2);
+      miniAxesHelper.position.set(boundingBox.min.x, boundingBox.min.y, boundingBox.min.z);
+      coordSystem.mini.push(miniAxesHelper);
+    } else if (type === "arrow") {
+      XYZ.forEach((xyzObj) => {
+        const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
+        coordSystem.main.push(arrowHelper);
+        const miniArrowHelper = new THREE.ArrowHelper(xyzObj.dir, boundingBox.min, size / 2, xyzObj.hex);
+        coordSystem.mini.push(miniArrowHelper);
+      })
+    }
+    XYZ.forEach((xyzObj) => {
+      const axesLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
+      const position = xyzObj.dir.clone().multiplyScalar(size).add(origin);
+      axesLabel.position.set(position.x, position.y, position.z);
+      coordSystem.main.push(axesLabel);
+    })
+  }
+
+  this.enableCoordSystem = (enable, options = { miniaxes: false, erase: false }) => {
+    this.displayMiniAxes = enable && options.miniaxes
+    Object.entries(coordSystem).forEach(([type, coordObjects]) => {
+      coordObjects.forEach((cObj) => {
+        if (type === "main") {
+          scene.remove(cObj)
+          if (enable && !options.miniaxes) {
+            scene.add(cObj)
+          }
+        } else if (type === "mini") {
+          miniAxesScene.remove(cObj)
+          if (enable && options.miniaxes) {
+            miniAxesScene.add(cObj)
+          }
+        }
+        if (!enable) {
+          if (cObj.type === "AxesHelper") {
+            cObj.geometry.dispose();
+            cObj.material.dispose();
+          } else if (cObj.type === "ArrowHelper") {
+          } else if (cObj.type === "Sprite") {
+            cObj.material.map.dispose();
+            cObj.material.dispose();
+          }
+        }
+      })
+      if (!enable && options.erase) {
+        coordSystem[type] = [];
+      }
+    })
   }
 }
 
