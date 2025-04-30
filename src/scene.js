@@ -71,7 +71,7 @@ exports.Scene = function (containerIn, rendererIn) {
     y_offset: 16,
     width: 128,
     height: 128,
-    align: "top-left",
+    align: "top-right",
     updateRequired: true
   };
   let scissor = {x: 0,  y: 0};
@@ -83,10 +83,11 @@ exports.Scene = function (containerIn, rendererIn) {
   let markerCluster = new MarkerCluster(this);
   markerCluster.disable();
   scene.add(markerCluster.group);
-  let coordSystem = {
+  let axisDisplay = {
     main: [],
     mini: [],
   }
+  const _v3 = new THREE.Vector3( 0, 0, 0 );
 
   const getDrawingWidth = () => {
     if (container)
@@ -810,8 +811,7 @@ exports.Scene = function (containerIn, rendererIn) {
    */
   this.alignBoundingBoxToCameraView = (boundingBox, transitionTime) => {
     if (boundingBox) {
-      const center = new THREE.Vector3();
-      boundingBox.getCenter(center);
+      boundingBox.getCenter(_v3);
       const viewport = this.getZincCameraControls().getCurrentViewport();
       const target = new THREE.Vector3(viewport.targetPosition[0],
         viewport.targetPosition[1], viewport.targetPosition[2]);
@@ -878,10 +878,9 @@ exports.Scene = function (containerIn, rendererIn) {
    */
   this.setCameraTargetToObject = zincObject => {
     if (this.objectIsInScene(zincObject)) {
-      const center = new THREE.Vector3();
       const boundingBox = zincObject.getBoundingBox();
       const viewport = this.getZincCameraControls().getCurrentViewport();
-      boundingBox.getCenter(center);
+      boundingBox.getCenter(_v3);
       const target = new THREE.Vector3(viewport.targetPosition[0],
         viewport.targetPosition[1], viewport.targetPosition[2]);
       const eyePosition = new THREE.Vector3(viewport.eyePosition[0],
@@ -1285,7 +1284,8 @@ exports.Scene = function (containerIn, rendererIn) {
       region = rootRegion.createChildFromPath(regionPath);
     }
     const box = boundingBox ? boundingBox : this.getBoundingBox();
-    const dim = new THREE.Vector3().subVectors(box.max, box.min);
+    _v3.set(0.0, 0.0, 0.0);
+    const dim = _v3.subVectors(box.max, box.min);
     const boxGeo = new THREE.BoxGeometry(dim.x, dim.y, dim.z);
     const primitive = region.createGeometryFromThreeJSGeometry(
       group, boxGeo, colour, opacity, visibility, 10000);
@@ -1307,7 +1307,8 @@ exports.Scene = function (containerIn, rendererIn) {
         region = rootRegion.createChildFromPath(regionPath);
       }
       const box = boundingBox ? boundingBox : this.getBoundingBox();
-      const dim = new THREE.Vector3().subVectors(box.max, box.min);
+      _v3.set(0.0, 0.0, 0.0);
+      const dim = _v3.subVectors(box.max, box.min);
       const directions = ["x", "y", "z"];
       const primitives = [];
       let index = 0;
@@ -1362,22 +1363,53 @@ exports.Scene = function (containerIn, rendererIn) {
     this.forcePickableObjectsUpdate = true;
   }
 
-  this.createCoordSystem = (type = "axes", fitBoundingBox = false) => {
+  /*
+	 * Destory static axis display object
+	 */
+  this.destroyAxisDisplay = () => {
+    this.displayMiniAxes = false;
+    if (axisDisplay.main) {
+      this.enableAxisDisplay(false, false);
+      axisDisplay.main.forEach(axis => {
+        if (axis.dispose) { 
+          axis.dispose();
+        }
+      });
+    }
+    if (axisDisplay.mini) {
+      this.enableAxisDisplay(false, true);
+      axisDisplay.mini.forEach(axis => {
+        if (axis.dispose) { 
+          axis.dispose();
+        }
+      });
+    }
+    axisDisplay = {
+      main: [],
+      mini: [],
+    };
+  }
+
+  /*
+	 * Create static axis display object
+	 */
+  this.createAxisDisplay = (fitBoundingBox = false) => {
+    this.destroyAxisDisplay();
     const XYZ = [
       {
-        name: "X",
+        name: "x",
         dir: new THREE.Vector3(1, 0, 0),
         colour: "red",
         hex: 0xFF5555
       },
       {
-        name: "Y",
+        name: "y",
         dir: new THREE.Vector3(0, 1, 0),
         colour: "green",
         hex: 0x55FF55
       },
       {
-        name: "Z",
+        name: "z",
         dir: new THREE.Vector3(0, 0, 1),
         colour: "blue",
         hex: 0x5555FF
@@ -1389,60 +1421,40 @@ exports.Scene = function (containerIn, rendererIn) {
     if (fitBoundingBox) {
       origin.copy(boundingBox.min);
     }
-    if (type === "axes") {
-      const axesHelper = new THREE.AxesHelper(size);
-      axesHelper.position.set(origin.x, origin.y, origin.z);
-      coordSystem.main.push(axesHelper);
-      const miniAxesHelper = new THREE.AxesHelper(size / 2);
-      miniAxesHelper.position.set(boundingBox.min.x, boundingBox.min.y, boundingBox.min.z);
-      coordSystem.mini.push(miniAxesHelper);
-    } else if (type === "arrow") {
-      XYZ.forEach((xyzObj) => {
-        const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
-        coordSystem.main.push(arrowHelper);
-        const miniArrowHelper = new THREE.ArrowHelper(xyzObj.dir, boundingBox.min, size / 2, xyzObj.hex);
-        coordSystem.mini.push(miniArrowHelper);
-      })
-    }
     XYZ.forEach((xyzObj) => {
-      const axesLabel = createNewSpriteText(xyzObj.name, 0.012, xyzObj.colour, "Asap", 120, 700);
+      const arrowHelper = new THREE.ArrowHelper(xyzObj.dir, origin, size, xyzObj.hex);
+      axisDisplay.main.push(arrowHelper);
+      const miniArrowHelper = new THREE.ArrowHelper(xyzObj.dir, boundingBox.getCenter(_v3), size / 2, xyzObj.hex);
+      axisDisplay.mini.push(miniArrowHelper);
+
+      /*
+      const miniLabel = createNewSpriteText(xyzObj.name, 0.1, xyzObj.colour, "Asap", 120, 400);
+      const miniPosition = xyzObj.dir.clone().multiplyScalar(size/2).add(_v3[xyzObj.name]);
+      miniLabel.position.set(miniPosition.x, miniPosition.y, miniPosition.z);
+      axisDisplay.mini.push(miniLabel);
+      */
+
+      const axesLabel = createNewSpriteText(xyzObj.name, 0.036, xyzObj.colour, "Asap", 120, 700);
       const position = xyzObj.dir.clone().multiplyScalar(size).add(origin);
       axesLabel.position.set(position.x, position.y, position.z);
-      coordSystem.main.push(axesLabel);
+      axisDisplay.main.push(axesLabel);
     })
   }
 
-  this.enableCoordSystem = (enable, options = { miniaxes: false, erase: false }) => {
-    this.displayMiniAxes = enable && options.miniaxes
-    Object.entries(coordSystem).forEach(([type, coordObjects]) => {
-      coordObjects.forEach((cObj) => {
-        if (type === "main") {
-          scene.remove(cObj)
-          if (enable && !options.miniaxes) {
-            scene.add(cObj)
-          }
-        } else if (type === "mini") {
-          miniAxesScene.remove(cObj)
-          if (enable && options.miniaxes) {
-            miniAxesScene.add(cObj)
-          }
-        }
-        if (!enable) {
-          if (cObj.type === "AxesHelper") {
-            cObj.geometry.dispose();
-            cObj.material.dispose();
-          } else if (cObj.type === "ArrowHelper") {
-          } else if (cObj.type === "Sprite") {
-            cObj.material.map.dispose();
-            cObj.material.dispose();
-          }
-        }
-      })
-      if (!enable && options.erase) {
-        coordSystem[type] = [];
-      }
-    })
+  /*
+	 * Enable static axis display, createAxisDisplay must be called
+   * before the axis can be display.
+	 */
+  this.enableAxisDisplay = (enable, miniaxes = false) => {
+    if (miniaxes && axisDisplay?.mini?.length) {
+      this.displayMiniAxes = enable;
+      axisDisplay.mini.forEach(axis => {
+        enable ? miniAxesScene.add(axis) : miniAxesScene.remove(axis);
+      });
+    } else if (!miniaxes && axisDisplay.main) {
+      axisDisplay.main.forEach(axis => {
+        enable ? scene.add(axis) : scene.remove(axis);
+      });
+    }
   }
 }
-
-
