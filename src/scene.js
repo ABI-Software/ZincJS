@@ -820,7 +820,7 @@ exports.Scene = function (containerIn, rendererIn) {
       const newVec1 = new THREE.Vector3();
       const newVec2 = new THREE.Vector3();
       newVec1.subVectors(target, eyePosition).normalize();
-      newVec2.subVectors(target, center).normalize();
+      newVec2.subVectors(target, _v3).normalize();
       const newVec3 = new THREE.Vector3();
       newVec3.crossVectors(newVec1, newVec2);
       const angle = newVec1.angleTo(newVec2);
@@ -858,7 +858,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Transition the camera into viewing the zinc object with a 
+   * Transition the camera into viewing the zinc object wiexports.Scene.alignBoundingBoxToCameraViewth a 
    * smooth transition within the providied transitionTime.
    * 
    * @param {ZincObject} zincObject - the bounding box to target
@@ -888,13 +888,13 @@ exports.Scene = function (containerIn, rendererIn) {
       const newVec1 = new THREE.Vector3();
       const newVec2 = new THREE.Vector3();
       newVec1.subVectors(eyePosition, target);
-      newVec2.addVectors(center, newVec1);
+      newVec2.addVectors(_v3, newVec1);
       viewport.eyePosition[0] = newVec2.x;
       viewport.eyePosition[1] = newVec2.y;
       viewport.eyePosition[2] = newVec2.z;
-      viewport.targetPosition[0] = center.x;
-      viewport.targetPosition[1] = center.y;
-      viewport.targetPosition[2] = center.z;
+      viewport.targetPosition[0] = _v3.x;
+      viewport.targetPosition[1] = _v3.y;
+      viewport.targetPosition[2] = _v3.z;
       this.getZincCameraControls().setCurrentCameraSettings(viewport);
       markerCluster.markerUpdateRequired = true;
     }
