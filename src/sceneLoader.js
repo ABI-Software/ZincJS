@@ -60,7 +60,7 @@ exports.SceneLoader = function (sceneIn) {
     return xhr => {
       this.toBeDownloaded = this.toBeDownloaded - 1;
       errorDownload = true;
-      console.error(`There is an issue with external resource: ${xhr?.responseURL}.`);
+      console.error(`There is an issue with external resource ${xhr?.responseURL ? ": " +  xhr?.responseURL: ""}.`);
       const payload = {
         type: "Error",
         xhr
@@ -122,7 +122,7 @@ exports.SceneLoader = function (sceneIn) {
           if (finishCallback != undefined && (typeof finishCallback == 'function'))
             finishCallback();
         } else {
-          this.onError();
+          (this.onError(finishCallback))({responseURL: url});
         }
       }
     }

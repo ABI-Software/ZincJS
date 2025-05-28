@@ -92,10 +92,18 @@ Object.assign( JSONLoader.prototype, {
 			}
 
       if (scope && scope.parse) {
-        var object = scope.parse( json, texturePath );
-        onLoad( object.geometry, object.materials );
-      }
-
+				try {
+					var object = scope.parse( json, texturePath );
+					onLoad( object.geometry, object.materials );
+				} catch (e) {
+					console.error("The loader has encountered aon loading the geometry");
+					console.error(e);
+					if (onError) {
+						onError({responseURL: url});
+						return;
+					}
+				}
+			}
 		}, onProgress, onError );
 
 	},
