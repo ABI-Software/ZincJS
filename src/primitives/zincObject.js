@@ -61,6 +61,9 @@ const ZincObject = function() {
   //Draw range is only used by primitives added
   //programatically with addVertices function
   this.drawRange = -1;
+  //Default value of colour
+  this.origColour = undefined;
+  this.origVertexColors = false;
 }
 
 /**
@@ -350,6 +353,33 @@ ZincObject.prototype.getColour = function() {
  */
 ZincObject.prototype.setColour = function(colour) {
   this._lod.setColour(colour);
+}
+
+/**
+ * Set the colour of the mesh.
+ * 
+ * @param {THREE.Color} colour - Colour to be set for this geometry.
+ */
+ZincObject.prototype.setGreyScale = function(flag) {
+  if (flag) {
+    if (!this.origColour) {
+      if (this._lod._material) {
+        this.origColour = this._lod._material.color;
+        this.origVertexColors = this._lod._material.vertexColors;
+        this._lod.setVertexColors(false);
+        this._lod.setColour(new THREE.Color().setHex( 0xBBBBBB ));
+        return true;
+      }
+    }
+  } else {
+    if (this.origColour) {
+      this._lod.setColour(this.origColour);
+      this._lod.setVertexColors(this.origVertexColors);
+      this.origColour = undefined;
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
