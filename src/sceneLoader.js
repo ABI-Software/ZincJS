@@ -208,7 +208,7 @@ exports.SceneLoader = function (sceneIn) {
       if (newLines) {
         newLines.createLineSegment(geometry, material, options);
         newLines.setName(groupName);
-        newLines.anatomicalId = anatomicalId;
+        newLines.setAnatomicalId(anatomicalId);
         newLines.setRenderOrder(renderOrder);
         region.addZincObject(newLines);
         newLines.setDuration(scene.getDuration());
@@ -276,7 +276,7 @@ exports.SceneLoader = function (sceneIn) {
     else {
       newGlyphset.load(glyphsetData, resolveURL(glyphurl), myCallback, isInline, displayLabels);
     }
-    newGlyphset.anatomicalId = anatomicalId;
+    newGlyphset.setAnatomicalId(anatomicalId);
     newGlyphset.setRenderOrder(renderOrder);
     region.addZincObject(newGlyphset);
   };
@@ -311,7 +311,7 @@ exports.SceneLoader = function (sceneIn) {
       if (newPointset) {
         newPointset.createMesh(geometry, material, options);
         newPointset.setName(groupName);
-        newPointset.anatomicalId = anatomicalId;
+        newPointset.setAnatomicalId(anatomicalId);
         region.addZincObject(newPointset);
         newPointset.setDuration(scene.getDuration());
         newPointset.setRenderOrder(renderOrder);
@@ -492,7 +492,7 @@ exports.SceneLoader = function (sceneIn) {
         }
         ++this.toBeDownloaded;
         newTexture.load(textureData, myCallback, isInline);
-        newTexture.anatomicalId = anatomicalId;
+        newTexture.setAnatomicalId(anatomicalId);
         newTexture.setRenderOrder(renderOrder);
         region.addZincObject(newTexture);
       }
@@ -576,7 +576,9 @@ exports.SceneLoader = function (sceneIn) {
     localMorphColour,
     finishCallback,
     materialIn,
-    groupName
+    groupName,
+    renderOrder,
+    anatomicalId
   ) => {
     let options = {};
     options.colour = colour;
@@ -587,6 +589,8 @@ exports.SceneLoader = function (sceneIn) {
     newGeometry.createMesh(geometryIn, materialIn, options);
     if (newGeometry.getMorph()) {
       newGeometry.setName(groupName);
+      newGeometry.setRenderOrder(renderOrder);
+      newGeometry.setAnatomicalId(anatomicalId);
       if (region) region.addZincObject(newGeometry);
       newGeometry.setDuration(scene.getDuration());
       if (finishCallback != undefined && (typeof finishCallback == 'function'))
@@ -617,9 +621,7 @@ exports.SceneLoader = function (sceneIn) {
         material = materials[0];
       }
       const zincGeometry = addZincGeometry(region, geometry, colour, opacity, 
-        localTimeEnabled, localMorphColour, undefined, material, groupName, renderOrder);
-      zincGeometry.anatomicalId = anatomicalId;
-      zincGeometry.setRenderOrder(renderOrder);
+        localTimeEnabled, localMorphColour, undefined, material, groupName, renderOrder, anatomicalId);
       if (options.lod && options.lod.levels) {
         for (const [key, value] of Object.entries(options.lod.levels)) {
           zincGeometry.addLOD(primitivesLoader, key, value.URL, value.Index, options.lod.preload);

@@ -548,6 +548,7 @@ let Region = function (parentIn, sceneIn) {
   }
 
   this.findObjectsWithAnatomicalId = (anatomicalId, transverse) => {
+    const objectsArray = [];
     zincObjects.forEach(zincObject => {
       if (zincObject.anatomicalId === anatomicalId)
         objectsArray.push(zincObject);

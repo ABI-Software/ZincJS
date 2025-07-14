@@ -201,6 +201,16 @@ ZincObject.prototype.setMesh = function(mesh, localTimeEnabled, localMorphColour
 /**
  * Set the name for this ZincObject.
  * 
+ * @param {String} anatomicalId - Id to be set.
+ */
+ZincObject.prototype.setAnatomicalId = function(anatomicalId) {
+  this.anatomicalId = anatomicalId;
+}
+
+
+/**
+ * Set the name for this ZincObject.
+ * 
  * @param {String} groupNameIn - Name to be set.
  */
 ZincObject.prototype.setName = function(groupNameIn) {
