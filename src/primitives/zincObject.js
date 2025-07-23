@@ -64,6 +64,7 @@ const ZincObject = function() {
   //Default value of colour
   this.origColour = undefined;
   this.origVertexColors = false;
+  this.isPickable = true;
 }
 
 /**
@@ -199,14 +200,23 @@ ZincObject.prototype.setMesh = function(mesh, localTimeEnabled, localMorphColour
 }
 
 /**
- * Set the name for this ZincObject.
+ * Set isPickable for this ZincObject.
+ * 
+ * @param {String} isPickable - Boolean to enable object pick.
+ */
+ZincObject.prototype.setIsPickable = function(isPickable) {
+  this.isPickable = isPickable;
+  if (this.region) this.region.pickableUpdateRequired = true;
+}
+
+/**
+ * Set the anatomicalId for this ZincObject.
  * 
  * @param {String} anatomicalId - Id to be set.
  */
 ZincObject.prototype.setAnatomicalId = function(anatomicalId) {
   this.anatomicalId = anatomicalId;
 }
-
 
 /**
  * Set the name for this ZincObject.
