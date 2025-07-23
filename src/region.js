@@ -357,7 +357,7 @@ let Region = function (parentIn, sceneIn) {
   this.getPickableThreeJSObjects = (objectsList,  transverse) => {
     if (group.visible) {
       zincObjects.forEach(zincObject => {
-        if (zincObject.getGroup() && zincObject.getGroup().visible) {
+        if (zincObject.isPickable && zincObject.getGroup() && zincObject.getGroup().visible) {
           let marker = zincObject.marker;
           if (marker && marker.isEnabled()) {
             objectsList.push(marker.getMorph());
