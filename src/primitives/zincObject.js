@@ -206,6 +206,7 @@ ZincObject.prototype.setMesh = function(mesh, localTimeEnabled, localMorphColour
  */
 ZincObject.prototype.setIsPickable = function(isPickable) {
   this.isPickable = isPickable;
+  if (this.region) this.region.pickableUpdateRequired = true;
 }
 
 /**
