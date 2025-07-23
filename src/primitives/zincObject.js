@@ -205,8 +205,10 @@ ZincObject.prototype.setMesh = function(mesh, localTimeEnabled, localMorphColour
  * @param {String} isPickable - Boolean to enable object pick.
  */
 ZincObject.prototype.setIsPickable = function(isPickable) {
-  this.isPickable = isPickable;
-  if (this.region) this.region.pickableUpdateRequired = true;
+  if (this.isPickable !== isPickable) {
+    this.isPickable = isPickable;
+    if (this.region) this.region.pickableUpdateRequired = true;
+  }
 }
 
 /**
