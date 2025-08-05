@@ -13,6 +13,8 @@ const toBufferGeometry = require('../utilities').toBufferGeometry;
 const Lines = function () {
   (require('./zincObject').ZincObject).call(this);
 	this.isLines = true;
+	this.isTubeLines = true;
+  let curve = undefined;
 
   /**
    * Create the line segements using geometry and material.
@@ -27,11 +29,15 @@ const Lines = function () {
    */
 	this.createLineSegment = (geometryIn, materialIn, options) => {
 		if (geometryIn && materialIn) {
-			let geometry = toBufferGeometry(geometryIn, options);
-			if (options.localMorphColour && geometry.morphAttributes[ "color" ])
+      curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
+      const geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, 100, 0.01, 20, false );
+			// let geometry = toBufferGeometry(geometryIn, options);
+
+      if (options.localMorphColour && geometry.morphAttributes[ "color" ])
 				materialIn.onBeforeCompile = (require("./augmentShader").augmentMorphColor)();
-      let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
-      this.setMesh(line, options.localTimeEnabled, options.localMorphColour);
+      const mesh = new THREE.Mesh(geometry, materialIn)
+      // let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
+      this.setMesh(mesh, options.localTimeEnabled, options.localMorphColour);
 		}
 	}
 
@@ -46,6 +52,14 @@ const Lines = function () {
 			this.morph.material.needsUpdate = true;
 		}
 	}
+
+  this.updateTube = (seg, radius, radialSeg, closed = false) => {
+    if (seg && radius && radialSeg) {
+      let mesh = this.getMorph();
+      mesh.geometry.dispose();
+      mesh.geometry = new THREE.TubeGeometry(curve, seg, radius, radialSeg, closed);
+    }
+  }
 
   /**
    * Add new lines to existing lines if it exists, otherwise
