@@ -52,6 +52,9 @@ const Lines = function () {
 		}
 	}
 
+  /**
+   * Display in normal line style
+   */
   this.useLines = () => {
     this.isLines = true;
     const { geometryIn, materialIn, options } = dataIn;
@@ -61,33 +64,49 @@ const Lines = function () {
     this.isTubeLines = false;
   }
 
-  this.useTubeLines = (seg, radius, radialSeg, closed = false) => {
-    if (seg && radius && radialSeg) {
+  /**
+   * Display in tube line style
+   * 
+   * @param {*} segment The number of segments that make up the tube.
+   * @param {*} radius The radius of the tube.
+   * @param {*} radialSegment The number of segments that make up the cross-section.
+   * @param {*} closed Is the tube open or closed.
+   */
+  this.useTubeLines = (segment, radius, radialSegment, closed = false) => {
+    if (segment && radius && radialSegment) {
       this.isTubeLines = true;
       const { geometryIn, materialIn, options } = dataIn;
       const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, seg, radius, radialSeg, closed );
+      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, segment, radius, radialSegment, closed );
       this.isLines = false;
     }
   }
 
-  this.updateTube = (seg, radius, radialSeg, closed = false) => {
-    if (seg && radius && radialSeg) {
+  /**
+   * Update tube segment/radius/radius segment/closed value
+   * 
+   * @param {*} segment The number of segments that make up the tube.
+   * @param {*} radius The radius of the tube.
+   * @param {*} radialSegment The number of segments that make up the cross-section.
+   * @param {*} closed Is the tube open or closed.
+   */
+  this.updateTube = (segment, radius, radialSegment, closed = false) => {
+    if (segment && radius && radialSegment) {
       const { geometryIn, materialIn, options } = dataIn;
       const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new THREE.TubeGeometry(curve, seg, radius, radialSeg, closed);
+      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)(curve, segment, radius, radialSegment, closed);
     }
   }
 
   /**
    * Add new lines to existing lines if it exists, otherwise
    * create a new one and add to it.
+   * 
    * @param {Array} coords  -An array of three components coordinates.
-
    * @param {Number} colour - A hex value of the colour for the points
    */
 	this.addLines = (coords, colour)  => {
