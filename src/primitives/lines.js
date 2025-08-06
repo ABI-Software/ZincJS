@@ -12,9 +12,10 @@ const toBufferGeometry = require('../utilities').toBufferGeometry;
  */
 const Lines = function () {
   (require('./zincObject').ZincObject).call(this);
-	this.isLines = true;
-	this.isTubeLines = true;
-  let curve = undefined;
+	this.isOptionalLines = true;
+	this.isLines = false;
+	this.isTubeLines = false;
+  let dataIn = {};
 
   /**
    * Create the line segements using geometry and material.
@@ -29,16 +30,14 @@ const Lines = function () {
    */
 	this.createLineSegment = (geometryIn, materialIn, options) => {
 		if (geometryIn && materialIn) {
-      curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
-      const geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, 100, 0.01, 20, false );
-			// let geometry = toBufferGeometry(geometryIn, options);
-
+      dataIn = { geometryIn, materialIn, options };
+      let geometry = toBufferGeometry(geometryIn, options);
       if (options.localMorphColour && geometry.morphAttributes[ "color" ])
-				materialIn.onBeforeCompile = (require("./augmentShader").augmentMorphColor)();
-      const mesh = new THREE.Mesh(geometry, materialIn)
-      // let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
-      this.setMesh(mesh, options.localTimeEnabled, options.localMorphColour);
-		}
+        materialIn.onBeforeCompile = (require("./augmentShader").augmentMorphColor)();
+      let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
+      this.setMesh(line, options.localTimeEnabled, options.localMorphColour);
+      this.isLines = true;
+    }
 	}
 
   /**
@@ -53,8 +52,31 @@ const Lines = function () {
 		}
 	}
 
+  this.useLines = () => {
+    this.isLines = true;
+    const { geometryIn, materialIn, options } = dataIn;
+    let mesh = this.getMorph();
+    mesh.geometry.dispose();
+    mesh.geometry = toBufferGeometry(geometryIn, options);
+    this.isTubeLines = false;
+  }
+
+  this.useTubeLines = (seg, radius, radialSeg, closed = false) => {
+    if (seg && radius && radialSeg) {
+      this.isTubeLines = true;
+      const { geometryIn, materialIn, options } = dataIn;
+      const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
+      let mesh = this.getMorph();
+      mesh.geometry.dispose();
+      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, seg, radius, radialSeg, closed );
+      this.isLines = false;
+    }
+  }
+
   this.updateTube = (seg, radius, radialSeg, closed = false) => {
     if (seg && radius && radialSeg) {
+      const { geometryIn, materialIn, options } = dataIn;
+      const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
       mesh.geometry = new THREE.TubeGeometry(curve, seg, radius, radialSeg, closed);
