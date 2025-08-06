@@ -61,6 +61,8 @@ const Lines = function () {
     let mesh = this.getMorph();
     mesh.geometry.dispose();
     mesh.geometry = toBufferGeometry(geometryIn, options);
+    mesh.material.dispose();
+    mesh.material = new THREE.LineBasicMaterial( { color: materialIn.color } );
     this.isTubeLines = false;
   }
 
@@ -79,7 +81,9 @@ const Lines = function () {
       const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)( curve, segment, radius, radialSegment, closed );
+      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( curve, segment, radius, radialSegment, closed );
+      mesh.material.dispose();
+      mesh.material = new THREE.MeshBasicMaterial( { color: materialIn.color } );
       this.isLines = false;
     }
   }
@@ -92,13 +96,13 @@ const Lines = function () {
    * @param {*} radialSegment The number of segments that make up the cross-section.
    * @param {*} closed Is the tube open or closed.
    */
-  this.updateTube = (segment, radius, radialSegment, closed = false) => {
+  this.setTubeLines = (segment, radius, radialSegment, closed = false) => {
     if (segment && radius && radialSegment) {
       const { geometryIn, materialIn, options } = dataIn;
       const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/TubeGeometry").TubeGeometry)(curve, segment, radius, radialSegment, closed);
+      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)(curve, segment, radius, radialSegment, closed);
     }
   }
 
