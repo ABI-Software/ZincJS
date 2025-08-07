@@ -70,7 +70,20 @@ const Lines = function () {
 	this.getColourHex = () => {
     let mesh = this.getMorph();
     return mesh.material.color.getHexString();
-	}
+  }
+
+  /**
+   * Set the opacity of this Geometry. This function will also set the transparent
+   * according to the provided alpha value.
+   * 
+   * @param {Number} alpah - Alpha value to set for this geometry, 
+   * can be any value between from 0 to 1.0.
+   */
+  this.setAlpha = function (alpha) {
+    let mesh = this.getMorph();
+    mesh.material.opacity = alpha;
+    mesh.material.transparent = alpha < 1.0;
+  }
 
   /**
    * Display in normal line style
