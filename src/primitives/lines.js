@@ -53,6 +53,26 @@ const Lines = function () {
 	}
 
   /**
+   * Set the colour of the mesh using hex in string form.
+   * 
+   * @param {String} hex - The colour value in hex form.
+   */
+	this.setColourHex = (hex) => {
+    let mesh = this.getMorph();
+    mesh.material.color.setHex(hex);
+	}
+
+  /**
+   * Get the colour of the mesh in hex string form.
+   * 
+   * @return {String}
+   */
+	this.getColourHex = () => {
+    let mesh = this.getMorph();
+    return mesh.material.color.getHexString();
+	}
+
+  /**
    * Display in normal line style
    */
   this.useLines = () => {
@@ -61,8 +81,9 @@ const Lines = function () {
     let mesh = this.getMorph();
     mesh.geometry.dispose();
     mesh.geometry = toBufferGeometry(geometryIn, options);
+    const previousColor = mesh.material.color;
     mesh.material.dispose();
-    mesh.material = new THREE.LineBasicMaterial( { color: materialIn.color } );
+    mesh.material = new THREE.LineBasicMaterial( { color: previousColor } );
     this.isTubeLines = false;
   }
 
@@ -82,8 +103,9 @@ const Lines = function () {
       let mesh = this.getMorph();
       mesh.geometry.dispose();
       mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( path, tubularSegments, radius, radialSegments, closed );
+      const previousColor = mesh.material.color;
       mesh.material.dispose();
-      mesh.material = new THREE.MeshBasicMaterial( { color: materialIn.color } );
+      mesh.material = new THREE.MeshBasicMaterial( { color: previousColor } );
       this.isLines = false;
     }
   }
