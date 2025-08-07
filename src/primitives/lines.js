@@ -69,19 +69,19 @@ const Lines = function () {
   /**
    * Display in tube line style
    * 
-   * @param {*} segment The number of segments that make up the tube.
-   * @param {*} radius The radius of the tube.
-   * @param {*} radialSegment The number of segments that make up the cross-section.
-   * @param {*} closed Is the tube open or closed.
+   * @param {Integer} tubularSegments The number of segments that make up the tube.
+   * @param {Float} radius The radius of the tube.
+   * @param {Integer} radialSegments The number of segments that make up the cross-section.
+   * @param {Boolean} closed Is the tube open or closed.
    */
-  this.useTubeLines = (segment, radius, radialSegment, closed = false) => {
-    if (segment && radius && radialSegment) {
+  this.useTubeLines = (tubularSegments, radius, radialSegments, closed = false) => {
+    if (tubularSegments && radius && radialSegments) {
       this.isTubeLines = true;
       const { geometryIn, materialIn, options } = dataIn;
-      const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
+      const path = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( curve, segment, radius, radialSegment, closed );
+      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( path, tubularSegments, radius, radialSegments, closed );
       mesh.material.dispose();
       mesh.material = new THREE.MeshBasicMaterial( { color: materialIn.color } );
       this.isLines = false;
@@ -89,20 +89,20 @@ const Lines = function () {
   }
 
   /**
-   * Update tube segment/radius/radius segment/closed value
+   * Update tube tubularSegments/radius/radialSegments/closed value
    * 
-   * @param {*} segment The number of segments that make up the tube.
-   * @param {*} radius The radius of the tube.
-   * @param {*} radialSegment The number of segments that make up the cross-section.
-   * @param {*} closed Is the tube open or closed.
+   * @param {Integer} tubularSegments The number of segments that make up the tube.
+   * @param {Float} radius The radius of the tube.
+   * @param {Integer} radialSegments The number of segments that make up the cross-section.
+   * @param {Boolean} closed Is the tube open or closed.
    */
-  this.setTubeLines = (segment, radius, radialSegment, closed = false) => {
-    if (segment && radius && radialSegment) {
+  this.setTubeLines = (tubularSegments, radius, radialSegments, closed = false) => {
+    if (tubularSegments && radius && radialSegments) {
       const { geometryIn, materialIn, options } = dataIn;
-      const curve = new THREE.CatmullRomCurve3( geometryIn.vertices );
+      const path = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)(curve, segment, radius, radialSegment, closed);
+      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( path, tubularSegments, radius, radialSegments, closed );
     }
   }
 
