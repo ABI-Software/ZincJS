@@ -95,9 +95,10 @@ const Lines = function () {
     let mesh = this.getMorph();
     mesh.geometry.dispose();
     mesh.geometry = toBufferGeometry(geometryIn, options);
-    const previousColor = mesh.material.color;
+    const { color, opacity } = mesh.material;
     mesh.material.dispose();
-    mesh.material = new THREE.LineBasicMaterial({ color: previousColor });
+    mesh.material = new THREE.LineBasicMaterial({ color });
+    this.setAlpha(opacity)
     this.isTubeLines = false;
   }
 
@@ -130,9 +131,10 @@ const Lines = function () {
       mesh.geometry.dispose();
       const settings = { radius, radialSegments, closed };
       mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
-      const previousColor = mesh.material.color;
+      const { color, opacity } = mesh.material;
       mesh.material.dispose();
-      mesh.material = new THREE.MeshBasicMaterial({ color: previousColor });
+      mesh.material = new THREE.MeshBasicMaterial({ color });
+      this.setAlpha(opacity)
       this.isLines = false;
     }
   }
