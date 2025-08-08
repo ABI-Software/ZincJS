@@ -103,12 +103,12 @@ const Lines = function () {
 
   const getTubeLinesGeometry = (vertices, settings) => {
     const geometries = []
-    const { tubularSegments, radius, radialSegments, closed } = settings
+    const { radius, radialSegments, closed } = settings
     for (let index = 0; index < vertices.length - 1; index++) {
       const start = vertices[index];
       const end = vertices[index + 1];
       const path = new THREE.LineCurve3(start, end);
-      const tube = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
+      const tube = new THREE.TubeGeometry(path, 1, radius, radialSegments, closed);
       geometries.push(tube)
     }
     const mergedGeometry = mergeGeometries(geometries, true);
@@ -118,18 +118,17 @@ const Lines = function () {
   /**
    * Display in tube line style
    * 
-   * @param {Integer} tubularSegments The number of segments that make up the tube.
    * @param {Float} radius The radius of the tube.
    * @param {Integer} radialSegments The number of segments that make up the cross-section.
    * @param {Boolean} closed Is the tube open or closed.
    */
-  this.useTubeLines = (tubularSegments, radius, radialSegments, closed = false) => {
-    if (tubularSegments && radius && radialSegments) {
+  this.useTubeLines = (radius, radialSegments, closed = false) => {
+    if (radius && radialSegments) {
       this.isTubeLines = true;
-      const { geometryIn, materialIn, options } = dataIn;
+      const { geometryIn } = dataIn;
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      const settings = { tubularSegments, radius, radialSegments, closed };
+      const settings = { radius, radialSegments, closed };
       mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
       const previousColor = mesh.material.color;
       mesh.material.dispose();
@@ -139,19 +138,18 @@ const Lines = function () {
   }
 
   /**
-   * Update tube tubularSegments/radius/radialSegments/closed value
+   * Update tube radius/radialSegments/closed value
    * 
-   * @param {Integer} tubularSegments The number of segments that make up the tube.
    * @param {Float} radius The radius of the tube.
    * @param {Integer} radialSegments The number of segments that make up the cross-section.
    * @param {Boolean} closed Is the tube open or closed.
    */
-  this.setTubeLines = (tubularSegments, radius, radialSegments, closed = false) => {
-    if (tubularSegments && radius && radialSegments) {
+  this.setTubeLines = (radius, radialSegments, closed = false) => {
+    if (radius && radialSegments) {
       const { geometryIn, materialIn, options } = dataIn;
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      const settings = { tubularSegments, radius, radialSegments, closed };
+      const settings = { radius, radialSegments, closed };
       mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
     }
   }
