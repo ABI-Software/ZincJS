@@ -91,7 +91,7 @@ const Lines = function () {
    */
   this.useLines = () => {
     this.isLines = true;
-    const { geometryIn, materialIn, options } = dataIn;
+    const { geometryIn, options } = dataIn;
     let mesh = this.getMorph();
     mesh.geometry.dispose();
     mesh.geometry = toBufferGeometry(geometryIn, options);
@@ -146,7 +146,7 @@ const Lines = function () {
    */
   this.setTubeLines = (radius, radialSegments, closed = false) => {
     if (radius && radialSegments) {
-      const { geometryIn, materialIn, options } = dataIn;
+      const { geometryIn } = dataIn;
       let mesh = this.getMorph();
       mesh.geometry.dispose();
       const settings = { radius, radialSegments, closed };
