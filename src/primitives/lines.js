@@ -1,5 +1,6 @@
 const THREE = require('three');
 const toBufferGeometry = require('../utilities').toBufferGeometry;
+const mergeGeometries = require('../three/line/BufferGeometryUtils').mergeGeometries;
 
 /**
  * Provides an object which stores lines.
@@ -32,7 +33,7 @@ const Lines = function () {
 		if (geometryIn && materialIn) {
       dataIn = { geometryIn, materialIn, options };
       let geometry = toBufferGeometry(geometryIn, options);
-      if (options.localMorphColour && geometry.morphAttributes[ "color" ])
+      if (options.localMorphColour && geometry.morphAttributes["color"])
         materialIn.onBeforeCompile = (require("./augmentShader").augmentMorphColor)();
       let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
       this.setMesh(line, options.localTimeEnabled, options.localMorphColour);
@@ -96,8 +97,22 @@ const Lines = function () {
     mesh.geometry = toBufferGeometry(geometryIn, options);
     const previousColor = mesh.material.color;
     mesh.material.dispose();
-    mesh.material = new THREE.LineBasicMaterial( { color: previousColor } );
+    mesh.material = new THREE.LineBasicMaterial({ color: previousColor });
     this.isTubeLines = false;
+  }
+
+  const getTubeLinesGeometry = (vertices, settings) => {
+    const geometries = []
+    const { tubularSegments, radius, radialSegments, closed } = settings
+    for (let index = 0; index < vertices.length - 1; index++) {
+      const start = vertices[index];
+      const end = vertices[index + 1];
+      const path = new THREE.LineCurve3(start, end);
+      const tube = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
+      geometries.push(tube)
+    }
+    const mergedGeometry = mergeGeometries(geometries, true);
+    return mergedGeometry;
   }
 
   /**
@@ -112,13 +127,13 @@ const Lines = function () {
     if (tubularSegments && radius && radialSegments) {
       this.isTubeLines = true;
       const { geometryIn, materialIn, options } = dataIn;
-      const path = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( path, tubularSegments, radius, radialSegments, closed );
+      const settings = { tubularSegments, radius, radialSegments, closed };
+      mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
       const previousColor = mesh.material.color;
       mesh.material.dispose();
-      mesh.material = new THREE.MeshBasicMaterial( { color: previousColor } );
+      mesh.material = new THREE.MeshBasicMaterial({ color: previousColor });
       this.isLines = false;
     }
   }
@@ -134,10 +149,10 @@ const Lines = function () {
   this.setTubeLines = (tubularSegments, radius, radialSegments, closed = false) => {
     if (tubularSegments && radius && radialSegments) {
       const { geometryIn, materialIn, options } = dataIn;
-      const path = new THREE.CatmullRomCurve3( geometryIn.vertices );
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      mesh.geometry = new (require("../three/line/TubeGeometry").TubeGeometry)( path, tubularSegments, radius, radialSegments, closed );
+      const settings = { tubularSegments, radius, radialSegments, closed };
+      mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
     }
   }
 
