@@ -1,6 +1,6 @@
 const THREE = require('three');
 const toBufferGeometry = require('../utilities').toBufferGeometry;
-const mergeGeometries = require('../three/line/BufferGeometryUtils').mergeGeometries;
+const mergeGeometries = require('../utilities').mergeGeometries;
 
 /**
  * Provides an object which stores lines.
