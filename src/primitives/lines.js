@@ -102,17 +102,23 @@ const Lines = function () {
     this.isTubeLines = false;
   }
 
+  /**
+   * Get merged geometry from list of geometry vertices
+   * 
+   * @param {Array} vertices 
+   * @param {Object} settings 
+   * @returns {Object}
+   */
   const getTubeLinesGeometry = (vertices, settings) => {
-    const geometries = []
     const { radius, radialSegments, closed } = settings
-    for (let index = 0; index < vertices.length - 1; index++) {
-      const start = vertices[index];
-      const end = vertices[index + 1];
-      const path = new THREE.LineCurve3(start, end);
-      const tube = new THREE.TubeGeometry(path, 1, radius, radialSegments, closed);
-      geometries.push(tube)
-    }
+    const geometries = vertices.slice(0, -1).map((start, i) => {
+      const end = vertices[i + 1];
+      const curve = new THREE.LineCurve3(start, end);
+      const tubeGeometry = new THREE.TubeGeometry(curve, 1, radius, radialSegments, closed);
+      return tubeGeometry;
+    });
     const mergedGeometry = mergeGeometries(geometries, true);
+    geometries.forEach(g => g.dispose());
     return mergedGeometry;
   }
 
