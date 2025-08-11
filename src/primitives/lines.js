@@ -106,20 +106,26 @@ const Lines = function () {
    * Get merged geometry from list of geometry vertices
    * 
    * @param {Array} vertices 
-   * @param {Object} settings 
+   * @param {Object} settings - radius, radialSegments, smooth
    * @returns {Object}
    */
   const getTubeLinesGeometry = (vertices, settings) => {
-    const { radius, radialSegments, closed } = settings
-    const geometries = vertices.slice(0, -1).map((start, i) => {
-      const end = vertices[i + 1];
-      const curve = new THREE.LineCurve3(start, end);
-      const tubeGeometry = new THREE.TubeGeometry(curve, 1, radius, radialSegments, closed);
-      return tubeGeometry;
-    });
-    const mergedGeometry = mergeGeometries(geometries, true);
-    geometries.forEach(g => g.dispose());
-    return mergedGeometry;
+    const { radius, radialSegments, smooth } = settings
+    let finalGeometry;
+    if (smooth) {
+      const curve = new THREE.CatmullRomCurve3(vertices);
+      finalGeometry = new THREE.TubeGeometry(curve, vertices.length, radius, radialSegments, false);
+    } else {
+      const geometries = vertices.slice(0, -1).map((start, i) => {
+        const end = vertices[i + 1];
+        const curve = new THREE.LineCurve3(start, end);
+        const tubeGeometry = new THREE.TubeGeometry(curve, 1, radius, radialSegments, false);
+        return tubeGeometry;
+      });
+      finalGeometry = mergeGeometries(geometries, true);
+      geometries.forEach(g => g.dispose());
+    }
+    return finalGeometry;
   }
 
   /**
@@ -127,15 +133,15 @@ const Lines = function () {
    * 
    * @param {Float} radius The radius of the tube.
    * @param {Integer} radialSegments The number of segments that make up the cross-section.
-   * @param {Boolean} closed Is the tube open or closed.
+   * @param {Boolean} smooth false if pure line, true if shape made by line.
    */
-  this.useTubeLines = (radius, radialSegments, closed = false) => {
+  this.useTubeLines = (radius, radialSegments, smooth = false) => {
     if (radius && radialSegments) {
       this.isTubeLines = true;
       const { geometryIn } = dataIn;
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      const settings = { radius, radialSegments, closed };
+      const settings = { radius, radialSegments, smooth };
       mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
       const { color, opacity } = mesh.material;
       mesh.material.dispose();
@@ -146,18 +152,18 @@ const Lines = function () {
   }
 
   /**
-   * Update tube radius/radialSegments/closed value
+   * Update tube radius/radialSegments value
    * 
    * @param {Float} radius The radius of the tube.
    * @param {Integer} radialSegments The number of segments that make up the cross-section.
-   * @param {Boolean} closed Is the tube open or closed.
+   * @param {Boolean} smooth false if pure line, true if shape made by line.
    */
-  this.setTubeLines = (radius, radialSegments, closed = false) => {
+  this.setTubeLines = (radius, radialSegments, smooth = false) => {
     if (radius && radialSegments) {
       const { geometryIn } = dataIn;
       let mesh = this.getMorph();
       mesh.geometry.dispose();
-      const settings = { radius, radialSegments, closed };
+      const settings = { radius, radialSegments, smooth };
       mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
     }
   }
