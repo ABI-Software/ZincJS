@@ -14,8 +14,6 @@ const mergeGeometries = require('../utilities').mergeGeometries;
 const Lines = function () {
   (require('./zincObject').ZincObject).call(this);
 	this.isOptionalLines = true;
-	this.isLines = false;
-	this.isTubeLines = false;
   let dataIn = {};
 
   /**
@@ -32,12 +30,11 @@ const Lines = function () {
 	this.createLineSegment = (geometryIn, materialIn, options) => {
 		if (geometryIn && materialIn) {
       dataIn = { geometryIn, materialIn, options };
-      let geometry = toBufferGeometry(geometryIn, options);
-      if (options.localMorphColour && geometry.morphAttributes["color"])
-        materialIn.onBeforeCompile = (require("./augmentShader").augmentMorphColor)();
-      let line = new (require("../three/line/LineSegments").LineSegments)(geometry, materialIn);
-      this.setMesh(line, options.localTimeEnabled, options.localMorphColour);
-      this.isLines = true;
+      const settings = { radius: 1, radialSegments: 8, smooth: true };
+      const geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
+      const material = new THREE.MeshBasicMaterial({ color: materialIn.color });
+      const mesh = new THREE.Mesh( geometry, material );
+      this.setMesh(mesh, options.localTimeEnabled, options.localMorphColour);
     }
 	}
 
@@ -87,22 +84,6 @@ const Lines = function () {
   }
 
   /**
-   * Display in normal line style
-   */
-  this.useLines = () => {
-    this.isLines = true;
-    const { geometryIn, options } = dataIn;
-    let mesh = this.getMorph();
-    mesh.geometry.dispose();
-    mesh.geometry = toBufferGeometry(geometryIn, options);
-    const { color, opacity } = mesh.material;
-    mesh.material.dispose();
-    mesh.material = new THREE.LineBasicMaterial({ color });
-    this.setAlpha(opacity)
-    this.isTubeLines = false;
-  }
-
-  /**
    * Get merged geometry from list of geometry vertices
    * 
    * @param {Array} vertices 
@@ -128,27 +109,9 @@ const Lines = function () {
     return finalGeometry;
   }
 
-  /**
-   * Display in tube line style
-   * 
-   * @param {Float} radius The radius of the tube.
-   * @param {Integer} radialSegments The number of segments that make up the cross-section.
-   * @param {Boolean} smooth false if pure line, true if shape made by line.
-   */
-  this.useTubeLines = (radius, radialSegments, smooth = false) => {
-    if (radius && radialSegments) {
-      this.isTubeLines = true;
-      const { geometryIn } = dataIn;
-      let mesh = this.getMorph();
-      mesh.geometry.dispose();
-      const settings = { radius, radialSegments, smooth };
-      mesh.geometry = getTubeLinesGeometry(geometryIn.vertices, settings);
-      const { color, opacity } = mesh.material;
-      mesh.material.dispose();
-      mesh.material = new THREE.MeshBasicMaterial({ color });
-      this.setAlpha(opacity)
-      this.isLines = false;
-    }
+  this.useWireframe = (wireframe) => {
+    let mesh = this.getMorph();
+    mesh.material.wireframe = wireframe;
   }
 
   /**
