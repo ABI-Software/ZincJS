@@ -81,6 +81,7 @@ const Lines = function () {
     let mesh = this.getMorph();
     mesh.material.opacity = alpha;
     mesh.material.transparent = alpha < 1.0;
+    mesh.material.depthWrite = alpha > 0.5;
   }
 
   /**
