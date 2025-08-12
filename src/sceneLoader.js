@@ -190,8 +190,9 @@ exports.SceneLoader = function (sceneIn) {
   //Internal loader for a regular zinc geometry.
   const linesloader = (region, localTimeEnabled, localMorphColour, groupName,
     anatomicalId, renderOrder, lod, finishCallback) => {
-    return (geometry, materials) => {
-      const newLines = new (require('./primitives/lines').Lines)();
+      return (geometry, materials) => {
+      const isNerves = region.getName() === 'Nerves';
+      const newLines = isNerves ? new (require('./primitives/tubelines').TubeLines)() : new (require('./primitives/lines').Lines)();
       let material = undefined;
       if (materials && materials[0]) {
         material = new THREE.LineBasicMaterial({color:materials[0].color.clone()});
