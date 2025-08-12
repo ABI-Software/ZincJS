@@ -13,7 +13,7 @@ const mergeGeometries = require('../utilities').mergeGeometries;
  */
 const Lines = function () {
   (require('./zincObject').ZincObject).call(this);
-	this.isOptionalLines = true;
+	this.isTubeLines = true;
   let dataIn = {};
 
   /**
