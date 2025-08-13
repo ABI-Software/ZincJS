@@ -31,7 +31,7 @@ const TubeLines = function () {
         if (geometryIn && materialIn) {
             dataIn = { geometryIn, materialIn, options };
             const geometry = getTubeLinesGeometry(geometryIn.vertices);
-            const material = new THREE.MeshBasicMaterial({ color: materialIn.color });
+            const material = new THREE.MeshStandardMaterial({ color: materialIn.color });
             const mesh = new THREE.Mesh(geometry, material);
             this.setMesh(mesh, options.localTimeEnabled, options.localMorphColour);
         }
