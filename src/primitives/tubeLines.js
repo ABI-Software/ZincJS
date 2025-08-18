@@ -14,7 +14,7 @@ const TubeLines = function () {
     (require('./zincObject').ZincObject).call(this);
     this.isTubeLines = true;
     let dataIn = {};
-    let geometryConfig = { radius: 1, radialSegments: 8, smooth: true };
+    let geometryConfig = { radius: 1, radialSegments: 8, smooth: false };
 
     /**
      * Create the line segements using geometry and material.

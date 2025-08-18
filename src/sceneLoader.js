@@ -189,10 +189,9 @@ exports.SceneLoader = function (sceneIn) {
 
   //Internal loader for a regular zinc geometry.
   const linesloader = (region, localTimeEnabled, localMorphColour, groupName,
-    anatomicalId, renderOrder, lod, finishCallback) => {
+    anatomicalId, renderOrder, lod, tubeLines, finishCallback) => {
       return (geometry, materials) => {
-      const isNerves = region.getName() === 'Nerves';
-      const newLines = isNerves ? new (require('./primitives/tubelines').TubeLines)() : new (require('./primitives/lines').Lines)();
+      const newLines = tubeLines ? new (require('./primitives/tubeLines').TubeLines)() : new (require('./primitives/lines').Lines)();
       let material = undefined;
       if (materials && materials[0]) {
         material = new THREE.LineBasicMaterial({color:materials[0].color.clone()});
@@ -238,21 +237,22 @@ exports.SceneLoader = function (sceneIn) {
   this.loadLinesURL = (region, url, timeEnabled, morphColour, groupName, finishCallback, options) => {
 	  let localTimeEnabled = 0;
     this.toBeDownloaded += 1;
-    let isInline = (options && options.isInline) ? options.isInline : false;
-    let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
-    let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+    let isInline = options?.isInline ? options.isInline : false;
+    let anatomicalId = options?.anatomicalId ? options.anatomicalId : undefined;
+    let renderOrder = options?.renderOrder ? options.renderOrder : undefined;
 	  if (timeEnabled != undefined)
 		  localTimeEnabled = timeEnabled ? true : false;
 	  let localMorphColour = 0;
 	  if (morphColour != undefined)
 		  localMorphColour = morphColour ? true : false;
+    let tubeLines = options.tubeLines && !localTimeEnabled && !localMorphColour;
     if (isInline) {
       let object = primitivesLoader.parse( url );
       (linesloader(region, localTimeEnabled, localMorphColour, groupName, anatomicalId,
-        renderOrder, options.lod, finishCallback))( object.geometry, object.materials );
+        renderOrder, options.lod, tubeLines, finishCallback))( object.geometry, object.materials );
     } else {
       primitivesLoader.load(url, linesloader(region, localTimeEnabled, localMorphColour, groupName, 
-        anatomicalId, renderOrder, options.lod, finishCallback), this.onProgress(url), this.onError(finishCallback),
+        anatomicalId, renderOrder, options.lod, tubeLines, finishCallback), this.onProgress(url), this.onError(finishCallback),
         options.loaderOptions);
     }
   }
@@ -704,6 +704,7 @@ exports.SceneLoader = function (sceneIn) {
         fileFormat: item.FileFormat,
         anatomicalId: item.AnatomicalId,
         compression: item.compression,
+        tubeLines: item.tubeLines,
         lod: lod,
         renderOrder: order
       };
@@ -807,10 +808,11 @@ exports.SceneLoader = function (sceneIn) {
     }
   }
 
-  let filterPrimitivesArray = (array, options) => {
+  let supplementPrimitivesArray = (array, options) => {
     let newArray = array;
     const include = options?.enabled?.include;
     const exclude = options?.enabled?.exclude;
+    const tubeLines = options?.tubeLines;
     if (include?.length || exclude?.length) {
       if (include) {
         newArray = array.filter((item) => {
@@ -839,12 +841,19 @@ exports.SceneLoader = function (sceneIn) {
         });
       }
     }
+    if (tubeLines) {
+      newArray.forEach((item) => {
+        if (item.Type === "Lines") {
+          item.tubeLines = true;
+        }
+      });
+    }
     return newArray;
   }
 
-  let filterMetadataInArray = (metadata, options) => {
+  let supplementMetadataInArray = (metadata, options) => {
     if (Array.isArray(metadata)) {
-      return filterPrimitivesArray(metadata, options);
+      return supplementPrimitivesArray(metadata, options);
     }
     return metadata;
   }
@@ -900,7 +909,7 @@ exports.SceneLoader = function (sceneIn) {
   }
 
   let loadVersionOne = (targetRegion, metadata, referenceURL, finishCallback, allCompletedCallback, options) => {
-    const filteredMetada = filterMetadataInArray(metadata, options);
+    const filteredMetada = supplementMetadataInArray(metadata, options);
     let numberOfObjects = getNumberOfObjects(filteredMetada);
     // view file does not receive callback
     let callback = new metaFinishCallback(numberOfObjects, finishCallback, allCompletedCallback);
