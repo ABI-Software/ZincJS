@@ -217,9 +217,9 @@ exports.SceneLoader = function (sceneIn) {
 
   //Internal loader for a regular zinc geometry.
   const linesloader = (region, localTimeEnabled, localMorphColour, groupName,
-    anatomicalId, renderOrder, lod, finishCallback) => {
-    return (geometry, materials) => {
-      const newLines = new (require('./primitives/lines').Lines)();
+    anatomicalId, renderOrder, lod, tubeLines, finishCallback) => {
+      return (geometry, materials) => {
+      const newLines = tubeLines ? new (require('./primitives/tubeLines').TubeLines)() : new (require('./primitives/lines').Lines)();
       let material = undefined;
       if (materials &amp;&amp; materials[0]) {
         material = new THREE.LineBasicMaterial({color:materials[0].color.clone()});
@@ -265,21 +265,22 @@ exports.SceneLoader = function (sceneIn) {
   this.loadLinesURL = (region, url, timeEnabled, morphColour, groupName, finishCallback, options) => {
 	  let localTimeEnabled = 0;
     this.toBeDownloaded += 1;
-    let isInline = (options &amp;&amp; options.isInline) ? options.isInline : false;
-    let anatomicalId = (options &amp;&amp; options.anatomicalId) ? options.anatomicalId : undefined;
-    let renderOrder = (options &amp;&amp; options.renderOrder) ? options.renderOrder : undefined;
+    let isInline = options?.isInline ? options.isInline : false;
+    let anatomicalId = options?.anatomicalId ? options.anatomicalId : undefined;
+    let renderOrder = options?.renderOrder ? options.renderOrder : undefined;
 	  if (timeEnabled != undefined)
 		  localTimeEnabled = timeEnabled ? true : false;
 	  let localMorphColour = 0;
 	  if (morphColour != undefined)
 		  localMorphColour = morphColour ? true : false;
+    let tubeLines = options.tubeLines &amp;&amp; !localTimeEnabled &amp;&amp; !localMorphColour;
     if (isInline) {
       let object = primitivesLoader.parse( url );
       (linesloader(region, localTimeEnabled, localMorphColour, groupName, anatomicalId,
-        renderOrder, options.lod, finishCallback))( object.geometry, object.materials );
+        renderOrder, options.lod, tubeLines, finishCallback))( object.geometry, object.materials );
     } else {
       primitivesLoader.load(url, linesloader(region, localTimeEnabled, localMorphColour, groupName, 
-        anatomicalId, renderOrder, options.lod, finishCallback), this.onProgress(url), this.onError(finishCallback),
+        anatomicalId, renderOrder, options.lod, tubeLines, finishCallback), this.onProgress(url), this.onError(finishCallback),
         options.loaderOptions);
     }
   }
@@ -731,6 +732,7 @@ exports.SceneLoader = function (sceneIn) {
         fileFormat: item.FileFormat,
         anatomicalId: item.AnatomicalId,
         compression: item.compression,
+        tubeLines: item.tubeLines,
         lod: lod,
         renderOrder: order
       };
@@ -834,10 +836,11 @@ exports.SceneLoader = function (sceneIn) {
     }
   }
 
-  let filterPrimitivesArray = (array, options) => {
+  let supplementPrimitivesArray = (array, options) => {
     let newArray = array;
     const include = options?.enabled?.include;
     const exclude = options?.enabled?.exclude;
+    const tubeLines = options?.tubeLines;
     if (include?.length || exclude?.length) {
       if (include) {
         newArray = array.filter((item) => {
@@ -866,12 +869,19 @@ exports.SceneLoader = function (sceneIn) {
         });
       }
     }
+    if (tubeLines) {
+      newArray.forEach((item) => {
+        if (item.Type === "Lines") {
+          item.tubeLines = true;
+        }
+      });
+    }
     return newArray;
   }
 
-  let filterMetadataInArray = (metadata, options) => {
+  let supplementMetadataInArray = (metadata, options) => {
     if (Array.isArray(metadata)) {
-      return filterPrimitivesArray(metadata, options);
+      return supplementPrimitivesArray(metadata, options);
     }
     return metadata;
   }
@@ -927,7 +937,7 @@ exports.SceneLoader = function (sceneIn) {
   }
 
   let loadVersionOne = (targetRegion, metadata, referenceURL, finishCallback, allCompletedCallback, options) => {
-    const filteredMetada = filterMetadataInArray(metadata, options);
+    const filteredMetada = supplementMetadataInArray(metadata, options);
     let numberOfObjects = getNumberOfObjects(filteredMetada);
     // view file does not receive callback
     let callback = new metaFinishCallback(numberOfObjects, finishCallback, allCompletedCallback);
@@ -997,13 +1007,13 @@ exports.SceneLoader = function (sceneIn) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Zinc.html">Zinc</a></li></ul><h3>Classes</h3><ul><li><a href="CameraControls.html">CameraControls</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Glyph.html">Glyph</a></li><li><a href="Glyphset.html">Glyphset</a></li><li><a href="GlyphsetCSG.html">GlyphsetCSG</a></li><li><a href="LOD.html">LOD</a></li><li><a href="Label.html">Label</a></li><li><a href="Lines.html">Lines</a></li><li><a href="Lines2.html">Lines2</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MarkerCluster.html">MarkerCluster</a></li><li><a href="Minimap.html">Minimap</a></li><li><a href="Pointset.html">Pointset</a></li><li><a href="Region.html">Region</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="Scene.html">Scene</a></li><li><a href="SceneExporter.html">SceneExporter</a></li><li><a href="SceneLoader.html">SceneLoader</a></li><li><a href="Texture.html">Texture</a></li><li><a href="TextureArray.html">TextureArray</a></li><li><a href="TexturePrimitive.html">TexturePrimitive</a></li><li><a href="TextureSlides.html">TextureSlides</a></li><li><a href="VideoHandler.html">VideoHandler</a></li><li><a href="Viewport.html">Viewport</a></li><li><a href="ZincObject.html">ZincObject</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ModifiedDeviceOrientationControls">ModifiedDeviceOrientationControls</a></li><li><a href="global.html#StereoCameraZoomFixed">StereoCameraZoomFixed</a></li><li><a href="global.html#StereoEffect">StereoEffect</a></li><li><a href="global.html#augmentMorphColor">augmentMorphColor</a></li><li><a href="global.html#createBufferGeometry">createBufferGeometry</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Zinc.html">Zinc</a></li></ul><h3>Classes</h3><ul><li><a href="CameraControls.html">CameraControls</a></li><li><a href="Geometry.html">Geometry</a></li><li><a href="Glyph.html">Glyph</a></li><li><a href="Glyphset.html">Glyphset</a></li><li><a href="GlyphsetCSG.html">GlyphsetCSG</a></li><li><a href="LOD.html">LOD</a></li><li><a href="Label.html">Label</a></li><li><a href="Lines.html">Lines</a></li><li><a href="Lines2.html">Lines2</a></li><li><a href="Marker.html">Marker</a></li><li><a href="MarkerCluster.html">MarkerCluster</a></li><li><a href="Minimap.html">Minimap</a></li><li><a href="Pointset.html">Pointset</a></li><li><a href="Region.html">Region</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="Scene.html">Scene</a></li><li><a href="SceneExporter.html">SceneExporter</a></li><li><a href="SceneLoader.html">SceneLoader</a></li><li><a href="Texture.html">Texture</a></li><li><a href="TextureArray.html">TextureArray</a></li><li><a href="TexturePrimitive.html">TexturePrimitive</a></li><li><a href="TextureSlides.html">TextureSlides</a></li><li><a href="TubeLines.html">TubeLines</a></li><li><a href="VideoHandler.html">VideoHandler</a></li><li><a href="Viewport.html">Viewport</a></li><li><a href="ZincObject.html">ZincObject</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ModifiedDeviceOrientationControls">ModifiedDeviceOrientationControls</a></li><li><a href="global.html#StereoCameraZoomFixed">StereoCameraZoomFixed</a></li><li><a href="global.html#StereoEffect">StereoEffect</a></li><li><a href="global.html#augmentMorphColor">augmentMorphColor</a></li><li><a href="global.html#createBufferGeometry">createBufferGeometry</a></li><li><a href="global.html#mergeAttributes">mergeAttributes</a></li><li><a href="global.html#mergeGeometries">mergeGeometries</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Jul 23 2025 16:16:56 GMT+1200 (New Zealand Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 19 2025 10:22:02 GMT+1200 (New Zealand Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
