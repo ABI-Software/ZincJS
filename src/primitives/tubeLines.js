@@ -101,13 +101,13 @@ const TubeLines = function () {
         if (smooth) {
             const curve = new THREE.CatmullRomCurve3(vertices);
             finalGeometry = new THREE.TubeGeometry(curve, vertices.length, radius, radialSegments, false);
-        } else {
-            const geometries = vertices.slice(0, -1).map((start, i) => {
-                const end = vertices[i + 1];
-                const curve = new THREE.LineCurve3(start, end);
+        } else {           
+            const geometries = [];
+            for (let i = 0; i + 1 < vertices.length; i = i + 2) {
+                const curve = new THREE.LineCurve3(vertices[i], vertices[i+1]);
                 const tubeGeometry = new THREE.TubeGeometry(curve, 1, radius, radialSegments, false);
-                return tubeGeometry;
-            });
+                geometries.push(tubeGeometry);
+            }
             finalGeometry = mergeGeometries(geometries, true);
             geometries.forEach(g => g.dispose());
         }
