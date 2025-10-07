@@ -31,10 +31,10 @@ const ResizeSensor = require('css-element-queries/src/ResizeSensor');
 /**
  * Create a Zinc 3D renderer in the container provided.
  * The primary function of a Zinc 3D renderer is to display the current
- * scene (@link Scene} set to the renderer and each scene may contain as 
+ * scene (@link Scene} set to the renderer and each scene may contain as
  * many geometries, glyphset and other primitives as the system can support.
  * Zinc.Renderer also allows additional scenes to be displayed.
- * 
+ *
  * @param {Object} containerIn - Container to create the renderer on.
  * @class
  * @author Alan Wu
@@ -43,22 +43,26 @@ const ResizeSensor = require('css-element-queries/src/ResizeSensor');
 exports.Renderer = function (containerIn) {
 
 	let container = containerIn;
-	
+
 	const stats = 0;
-	
+
 	let renderer = undefined;
 	let currentScene = undefined;
 
 	//myGezincGeometriestains a tuple of the threejs mesh, timeEnabled, morphColour flag, unique id and morph
 	const clock = new THREE.Clock(false);
 	this.playAnimation = true;
-  /* default animation update rate, rate is 1000 and duration 
+  /* default animation update rate, rate is 1000 and duration
     is default to 6000, 6s to finish a full animation */
 	let playRate = 1000;
-	let preRenderCallbackFunctions = [];
-  let preRenderCallbackFunctions_id = 0;
-  let postRenderCallbackFunctions = [];
+	let preRenderCallbackFunctions = {};
+	let preRenderCallbackFunctions_id = 0;
+	let postRenderCallbackFunctions = {};
 	let postRenderCallbackFunctions_id  = 0;
+	let contextLostCallbackFunctions = {};
+	let contextLostCallbackFunctions_id = 0;
+	let contextRestoredCallbackFunctions = {};
+	let contextRestoredCallbackFunctions_id = 0;
 	let animated_id = undefined;
 	let cameraOrtho = undefined, sceneOrtho = undefined, logoSprite = undefined;
 	let sceneMap = [];
@@ -67,10 +71,11 @@ exports.Renderer = function (containerIn) {
 	let canvas = undefined;
   let sensor = undefined;
   let isRendering = false;
+	let isInitialised = false;
 	const _this = this;
 	const currentSize = [0, 0];
 	const currentOffset = [0, 0];
-	
+
 	this.getDrawingWidth = () => {
 		if (container) {
 			return container.clientWidth;
@@ -81,7 +86,7 @@ exports.Renderer = function (containerIn) {
 				return Math.round(canvas.width);
 		return 0;
 	}
-	
+
 	this.getDrawingHeight = () => {
 		if (container) {
 			return container.clientHeight;
@@ -92,8 +97,8 @@ exports.Renderer = function (containerIn) {
 				return Math.round(canvas.height);
 		return 0;
 	}
-	
-	/** 
+
+	/**
 	 * Call this to resize the renderer, this is normally call automatically.
 	 */
 	this.onWindowResize = () => {
@@ -113,7 +118,7 @@ exports.Renderer = function (containerIn) {
 					renderer.setSize(width, height, false);
 				} else {
 					renderer.setSize(width, height, false);
-					
+
 				}
 			}
 			if (localRect) {
@@ -126,45 +131,70 @@ exports.Renderer = function (containerIn) {
 			currentSize[1] = target.y;
 		}
 	}
-	
+
 	/**
 	 * Initialise the renderer and its visualisations.
 	 */
 	this.initialiseVisualisation = parameters => {
-	  parameters = parameters || {};
-	  if (parameters['antialias'] === undefined) {
-      let onMobile = false;
-      try {
-        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-          onMobile = true;
-        }
-      }
-      catch(err) {
-        onMobile = false;
-      }
-      if (onMobile)
-        parameters['antialias'] = false;
-      else
-        parameters['antialias'] = true;
-	  }
-	  if (parameters["canvas"]) {
-		  container = undefined;
-		  canvas = parameters["canvas"];
-	  }
-    renderer = new THREE.WebGLRenderer(parameters);
-    if (container !== undefined) {
-		  container.appendChild( renderer.domElement );
-    }
-	  renderer.setClearColor( 0xffffff, 1);
-	  if (canvas &amp;&amp; canvas.style) {
-		  canvas.style.height = "100%";
-		  canvas.style.width = "100%";
-    }
-    renderer.autoClear = false;
-	  const scene = this.createScene("default");
-	  this.setCurrentScene(scene);
+		if (!isInitialised) {
+			parameters = parameters || {};
+			if (parameters['antialias'] === undefined) {
+				let onMobile = false;
+				try {
+					if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+						onMobile = true;
+					}
+				}
+				catch(err) {
+					onMobile = false;
+				}
+				if (onMobile)
+					parameters['antialias'] = false;
+				else
+					parameters['antialias'] = true;
+			}
+			if (parameters["canvas"]) {
+				container = undefined;
+				canvas = parameters["canvas"];
+			}
+			renderer = new THREE.WebGLRenderer(parameters);
+			if (container !== undefined) {
+				container.appendChild( renderer.domElement );
+			}
+			renderer.setClearColor( 0xffffff, 1);
+			if (canvas &amp;&amp; canvas.style) {
+				canvas.style.height = "100%";
+				canvas.style.width = "100%";
+			}
+			const domCanvas = renderer.domElement;
+			domCanvas.addEventListener("webglcontextlost", onContextLost, false);
+			domCanvas.addEventListener("webglcontextrestored", onContextRestored, false);
+
+			renderer.autoClear = false;
+			const scene = this.createScene("default");
+			this.setCurrentScene(scene);
+			isInitialised = true;
+		}
 	}
-	
+
+  const onContextLost = event => {
+    event.preventDefault();
+    for (let key of Object.keys(preRenderCallbackFunctions)) {
+      if (contextLostCallbackFunctions.hasOwnProperty(key)) {
+        contextLostCallbackFunctions[key].call();
+      }
+    }
+  }
+
+  const onContextRestored = event => {
+    event.preventDefault();
+    for (let key of Object.keys(preRenderCallbackFunctions)) {
+      if (contextRestoredCallbackFunctions.hasOwnProperty(key)) {
+        contextRestoredCallbackFunctions[key].call();
+      }
+    }
+  }
+
 	/**
 	 * Get the current scene on display.
 	 * @return {Zinc.Scene};
@@ -172,10 +202,10 @@ exports.Renderer = function (containerIn) {
 	this.getCurrentScene = () => {
 		return currentScene;
 	}
-	
+
 	/**
 	 * Set the current scene on display.
-	 * 
+	 *
 	 * @param {Zinc.Scene} sceneIn - The scene to be set, only scene created by this instance
 	 * of ZincRenderer is supported currently.
 	 */
@@ -192,21 +222,21 @@ exports.Renderer = function (containerIn) {
 			this.onWindowResize();
 		}
 	}
-	
+
 	/**
 	 * Return scene with the matching name if scene with that name has been created.
-	 * 
+	 *
 	 * @param {String} name - Name to match
 	 * @return {Zinc.Scene}
 	 */
 	this.getSceneByName = name => {
 		return sceneMap[name];
 	}
-	
+
 	/**
 	 * Create a new scene with the provided name if scene with the same name exists,
 	 * return undefined.
-	 * 
+	 *
 	 * @param {String} name - Name of the scene to be created.
 	 * @return {Zinc.Scene}
 	 */
@@ -224,7 +254,7 @@ exports.Renderer = function (containerIn) {
 			return new_scene;
 		}
 	}
-	
+
 	const updateOrthoScene = () => {
 		if (logoSprite != undefined) {
 			const material = logoSprite.material;
@@ -237,7 +267,7 @@ exports.Renderer = function (containerIn) {
 			}
 		}
 	};
-	
+
 	const updateOrthoCamera = () => {
 		if (cameraOrtho != undefined) {
 			const width = this.getDrawingWidth();
@@ -249,48 +279,48 @@ exports.Renderer = function (containerIn) {
 			cameraOrtho.updateProjectionMatrix();
 		}
 	};
-	
+
 	/**
 	 * Reset the viewport of the current scene to its original state.
 	 */
 	this.resetView = () => {
 		currentScene.resetView();
 	}
-	
+
 	/**
 	 * Adjust zoom distance to include all primitives in scene and also the additional scenes
 	 * but the lookat direction and up vectors will remain constant.
 	 */
 	this.viewAll = () => {
-		if (currentScene) {	
+		if (currentScene) {
 			const boundingBox = currentScene.getBoundingBox();
 			if (boundingBox) {
 			    for(let i = 0; i &lt; additionalActiveScenes.length; i++) {
 			        const boundingBox2 = additionalActiveScenes[i].getBoundingBox();
 			        if (boundingBox2) {
-			        	boundingBox.union(boundingBox2);
+								boundingBox.union(boundingBox2);
 			        }
 			    }
 				currentScene.viewAllWithBoundingBox(boundingBox);
 			}
 		}
 	}
-	
+
 	/**
 	 * Load a legacy model(s) format with the provided URLs and parameters. This only loads the geometry
 	 * without any of the metadata. Therefore, extra parameters should be provided. This should be
 	 * called from {@link Zinc.Scene}.
-	 * 
+	 *
 	 * @deprecated
 	 */
 	this.loadModelsURL = (urls, colours, opacities, timeEnabled, morphColour, finishCallback) => {
 		currentScene.loadModelsURL(urls, colours, opacities, timeEnabled, morphColour, finishCallback);
 	}
-	
+
 	const loadView = viewData => {
 		currentScene.loadView(viewData);
 	};
-	
+
 	/**
 	 * Load the viewport from an external location provided by the url. This should be
 	 * called from {@link Zinc.Scene};
@@ -300,24 +330,24 @@ exports.Renderer = function (containerIn) {
 	this.loadViewURL = url => {
 		currentScene.loadViewURL(url);
 	}
-	
+
 	/**
-	 * Load a legacy file format containing the viewport and its model file from an external 
+	 * Load a legacy file format containing the viewport and its model file from an external
 	 * location provided by the url. Use the new metadata format with
 	 * {@link Zinc.Scene#loadMetadataURL} instead. This should be
 	 * called from {@link Zinc.Scene};
-	 * 
+	 *
 	 * @param {String} URL - address to the file containing viewport and model information.
 	 * @deprecated
 	 */
 	this.loadFromViewURL = (jsonFilePrefix, finishCallback) => {
 		currentScene.loadFromViewURL(jsonFilePrefix, finishCallback);
 	}
-	
+
 	this.updateDirectionalLight = () => {
 		currentScene.updateDirectionalLight();
 	}
-  
+
   let runAnimation = () => {
     if (isRendering) {
       animated_id = requestAnimationFrame( runAnimation );
@@ -350,11 +380,55 @@ exports.Renderer = function (containerIn) {
 	}
 
 	const prevTime = Date.now();
-	
+
+	/**
+	 * Add a callback function which will be called when the gl context is lost.
+	 * @param {Function} callbackFunction - callbackFunction to be added.
+	 *
+	 * @return {Number}
+	 */
+	this.addContextLostCallbackFunction = callbackFunction => {
+		contextLostCallbackFunctions_id = contextLostCallbackFunctions_id + 1;
+		contextLostCallbackFunctions[contextLostCallbackFunctions_id] = callbackFunction;
+		return contextLostCallbackFunctions_id;
+	}
+
+	/**
+	 * Remove a callback function that is previously added to the renderer.
+	 * @param {Number} id - identifier of the previously added callback function.
+	 */
+	this.removeContextLostCallbackFunction = id => {
+		if (id in contextLostCallbackFunctions) {
+			delete contextLostCallbackFunctions[id];
+		}
+	}
+
+	/**
+	 * Add a callback function which will be called when the gl context is restored.
+	 * @param {Function} callbackFunction - callbackFunction to be added.
+	 *
+	 * @return {Number}
+	 */
+	this.addContextRestoredCallbackFunction = callbackFunction => {
+		contextRestoredCallbackFunctions_id = contextRestoredCallbackFunctions_id + 1;
+		contextRestoredCallbackFunctions[contextRestoredCallbackFunctions_id] = callbackFunction;
+		return contextRestoredCallbackFunctions_id;
+	}
+
+	/**
+	 * Remove a callback function that is previously added to the renderer.
+	 * @param {Number} id - identifier of the previously added callback function.
+	 */
+	this.removeContextRestoredCallbackFunction = id => {
+		if (id in contextRestoredCallbackFunctions_id) {
+			delete contextRestoredCallbackFunctions_id[id];
+		}
+	}
+
 	/**
 	 * Add a callback function which will be called everytime before the renderer renders its scene.
 	 * @param {Function} callbackFunction - callbackFunction to be added.
-	 * 
+	 *
 	 * @return {Number}
 	 */
 	this.addPreRenderCallbackFunction = callbackFunction => {
@@ -362,21 +436,21 @@ exports.Renderer = function (containerIn) {
 		preRenderCallbackFunctions[preRenderCallbackFunctions_id] = callbackFunction;
 		return preRenderCallbackFunctions_id;
 	}
-	
+
 	/**
 	 * Remove a callback function that is previously added to the scene.
 	 * @param {Number} id - identifier of the previously added callback function.
 	 */
 	this.removePreRenderCallbackFunction = id => {
 		if (id in preRenderCallbackFunctions) {
-   			delete preRenderCallbackFunctions[id];
+			delete preRenderCallbackFunctions[id];
 		}
 	}
-  
+
 	/**
 	 * Add a callback function which will be called everytime after the renderer renders its scene.
 	 * @param {Function} callbackFunction - callbackFunction to be added.
-	 * 
+	 *
 	 * @return {Number}
 	 */
 	this.addPostRenderCallbackFunction = callbackFunction => {
@@ -384,14 +458,14 @@ exports.Renderer = function (containerIn) {
 		postRenderCallbackFunctions[postRenderCallbackFunctions_id] = callbackFunction;
 		return postRenderCallbackFunctions_id;
 	}
-	
+
 	/**
 	 * Remove a callback function that is previously added to the scene.
 	 * @param {Number} id - identifier of the previously added callback function.
 	 */
 	this.removePostRenderCallbackFunction = id => {
 		if (id in postRenderCallbackFunctions) {
-   			delete postRenderCallbackFunctions[id];
+			delete postRenderCallbackFunctions[id];
 		}
 	}
 
@@ -402,7 +476,7 @@ exports.Renderer = function (containerIn) {
 	this.getPlayRate = () => {
 		return playRate;
 	}
-	
+
 	/**
 	 * Set the current play rate, playrate affects how fast an animated object animates.
 	 * @param {Number} PlayRateIn - value to set the playrate to.
@@ -411,12 +485,12 @@ exports.Renderer = function (containerIn) {
 	this.setPlayRate = playRateIn => {
 		playRate = playRateIn;
 	}
-	
+
 	this.getCurrentTime = () => {
 		return currentScene.getCurrentTime();
 	}
-	
-	
+
+
 	/**
 	 * Get the current play rate, playrate affects how fast an animated object animates.
 	 * Also see {@link Zinc.Scene#duration}.
@@ -424,28 +498,28 @@ exports.Renderer = function (containerIn) {
 	this.setMorphsTime = time => {
 		currentScene.setMorphsTime(time);
 	}
-	
+
 	/**
 	 * Get {Zinc.Geoemtry} by its id. This should be called from {@link Zinc.Scene};
-	 * 
+	 *
 	 * @depreacted
 	 * @return {Zinc.Geometry}
 	 */
 	this.getZincGeometryByID = id => {
 		return currentScene.getZincGeometryByID(id);
-	}	
-	
+	}
+
 	/**
 	 * Add {Three.Object} to the current scene.
 	 */
 	this.addToScene = object => {
 		currentScene.addObject(object)
 	}
-	
+
 	/**
 	 * Add {Three.Object} to the ortho scene, objects added to the ortho scene are rendered in
-	 * normalised coordinates and overlay on top of current scene.  
-	 * 
+	 * normalised coordinates and overlay on top of current scene.
+	 *
 	 */
 	this.addToOrthoScene = object => {
 		if (sceneOrtho == undefined)
@@ -459,7 +533,7 @@ exports.Renderer = function (containerIn) {
 		}
 		sceneOrtho.add(object)
 	}
-	
+
 	const createHUDSprites = logoSprite => {
 		return texture => {
 			texture.needsUpdate = true;
@@ -474,13 +548,13 @@ exports.Renderer = function (containerIn) {
 			this.addToOrthoScene(logoSprite);
 		};
 	};
-	
+
 	this.addLogo = () => {
 		logoSprite = new THREE.Sprite();
 		const logo = THREE.ImageUtils.loadTexture(
 				"images/abi_big_logo_transparent_small.png", undefined, createHUDSprites(logoSprite));
 	}
-	
+
 	/**
 	 * Render the current and all additional scenes. It will first update all geometries and glyphsets
 	 * in scenes, clear depth buffer and render the ortho scene, call the preRenderCallbackFunctions stack
@@ -489,8 +563,9 @@ exports.Renderer = function (containerIn) {
 	this.render = () => {
 		if (!sensor) {
 			if (container) {
-				if (container.clientWidth > 0 &amp;&amp; container.clientHeight > 0)
+				if (container.clientWidth > 0 &amp;&amp; container.clientHeight > 0) {
 					sensor = new ResizeSensor(container, this.onWindowResize);
+				}
 			} else if (canvas) {
 				if (canvas.width > 0 &amp;&amp; canvas.height > 0)
 					sensor = new ResizeSensor(canvas, this.onWindowResize);
@@ -506,26 +581,34 @@ exports.Renderer = function (containerIn) {
 			renderer.clearDepth();
 			renderer.render( sceneOrtho, cameraOrtho );
 		}
-    for (let key in preRenderCallbackFunctions) {
+    for (let key of Object.keys(preRenderCallbackFunctions)) {
       if (preRenderCallbackFunctions.hasOwnProperty(key)) {
         preRenderCallbackFunctions[key].call();
       }
     }
     currentScene.render(renderer);
-    for (let key in postRenderCallbackFunctions) {
+    for (let key of Object.keys(postRenderCallbackFunctions)) {
       if (postRenderCallbackFunctions.hasOwnProperty(key)) {
         postRenderCallbackFunctions[key].call();
       }
     }
 	}
-	
+
+	this.forceContextLoss = () => {
+		renderer.forceContextLoss();
+	}
+
+	this.forceContextRestore= () => {
+		renderer.forceContextRestore();
+	}
+
 	/**
 	 * Get the internal {@link Three.Renderer}, to gain access to ThreeJS APIs.
 	 */
 	this.getThreeJSRenderer = () => {
 		return renderer;
 	}
-	
+
 	/**
 	 * Check if a scene is currently active.
 	 * @param {Zinc.Scene} sceneIn - Scene to check if it is currently
@@ -536,17 +619,17 @@ exports.Renderer = function (containerIn) {
 			return true;
 		} else {
 		    for(let i = 0; i &lt; additionalActiveScenes.length; i++) {
-		        const sceneItem = additionalActiveScenes[i];
-		        if (sceneItem === sceneIn)
-		        	return true;
+					const sceneItem = additionalActiveScenes[i];
+					if (sceneItem === sceneIn)
+						return true;
 		    }
 		}
 	  return false;
-	} 
-	
+	}
+
 	/**
-	 * Add additional active scene for rendering, this scene will also be rendered but 
-	 * viewport of the currentScene will be used. 
+	 * Add additional active scene for rendering, this scene will also be rendered but
+	 * viewport of the currentScene will be used.
 	 * @param {Zinc.Scene} additionalScene - Scene to be added to the rendering.
 	 */
 	this.addActiveScene = additionalScene => {
@@ -555,23 +638,23 @@ exports.Renderer = function (containerIn) {
 			scenesGroup.add(additionalScene.getThreeJSScene());
 		}
 	}
-	
+
 	/**
-	 * Remove a currenrtly active scene from the renderer, this scene will also be rendered but 
-	 * viewport of the currentScene will be used. 
+	 * Remove a currenrtly active scene from the renderer, this scene will also be rendered but
+	 * viewport of the currentScene will be used.
 	 * @param {Zinc.Scene} additionalScene - Scene to be removed from rendering.
 	 */
 	this.removeActiveScene = additionalScene => {
-	    for(let i = 0; i &lt; additionalActiveScenes.length; i++) {
-	        const sceneItem = additionalActiveScenes[i];
-	        if (sceneItem === additionalScene) {
-	        	additionalActiveScenes.splice(i, 1);
-	        	scenesGroup.remove(additionalScene.getThreeJSScene());
-	        	return;
-	        }
-	    }
+		for(let i = 0; i &lt; additionalActiveScenes.length; i++) {
+			const sceneItem = additionalActiveScenes[i];
+			if (sceneItem === additionalScene) {
+				additionalActiveScenes.splice(i, 1);
+				scenesGroup.remove(additionalScene.getThreeJSScene());
+				return;
+			}
+		}
 	}
-	
+
 	/**
 	 * Clear all additional scenes from rendering except for curentScene.
 	 */
@@ -581,37 +664,44 @@ exports.Renderer = function (containerIn) {
 		}
 		additionalActiveScenes.splice(0,additionalActiveScenes.length);
 	}
-	
-	/**
-	 * Dispose all memory allocated, this will effetively destroy all scenes.
-	 */
-	this.dispose = () => {
+
+  /**
+   * Dispose all memory allocated, this will effetively destroy all scenes.
+   */
+  this.dispose = () => {
     if (isRendering)
       cancelAnimationFrame(animated_id);
-	  for (const key in sceneMap) {
-	    if (sceneMap.hasOwnProperty(key)) {
-	      sceneMap[key].clearAll();
-	    }
-	  }
-	  sceneMap = [];
-	  additionalActiveScenes = [];
-	  scenesGroup = new THREE.Group();
-	  this.stopAnimate();
-	  preRenderCallbackFunctions = [];
-	  preRenderCallbackFunctions_id = 0;
-	  cameraOrtho = undefined;
-	  sceneOrtho = undefined;
-	  logoSprite = undefined;
-	  const scene = this.createScene("default");
-	  this.setCurrentScene(scene);
-	  sensor = undefined;
-	}
-	
+    for (const key in sceneMap) {
+      if (sceneMap.hasOwnProperty(key)) {
+        sceneMap[key].clearAll();
+      }
+    }
+    sceneMap = [];
+    additionalActiveScenes = [];
+    scenesGroup = new THREE.Group();
+    this.stopAnimate();
+    preRenderCallbackFunctions = {};
+    preRenderCallbackFunctions_id = 0;
+    postRenderCallbackFunctions = {};
+    postRenderCallbackFunctions = 0;
+    contextLostCallbackFunctions = {};
+    contextLostCallbackFunctions_id = 0;
+    contextRestoredCallbackFunctions = {};
+    contextRestoredCallbackFunctions_id = 0;
+    cameraOrtho = undefined;
+    sceneOrtho = undefined;
+    logoSprite = undefined;
+    const scene = this.createScene("default");
+    this.setCurrentScene(scene);
+    sensor = undefined;
+    renderer?.dispose();
+  }
+
 	/**
 	 * Transition from the current viewport to the endingScene's viewport in the specified duration.
-	 * 
+	 *
 	 * @param {Zinc.Scene} endingScene - Viewport of this scene will be used as the destination.
-	 * @param {Number} duration - Amount of time to transition from current viewport to the 
+	 * @param {Number} duration - Amount of time to transition from current viewport to the
 	 * endingScene's viewport.
 	 */
 	this.transitionScene = (endingScene, duration) => {
@@ -654,7 +744,7 @@ exports.Renderer = function (containerIn) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 19 2025 10:22:02 GMT+1200 (New Zealand Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Oct 08 2025 09:23:22 GMT+1300 (New Zealand Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
