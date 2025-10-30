@@ -8,7 +8,7 @@ const Label = require('./label').Label;
  * Provides an object which stores points and provides method which controls its position.
  * This is created when a valid json file containing point is read into a {@link Zinc.Scene}
  * object.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {Pointset}
@@ -20,7 +20,7 @@ const Pointset = function () {
 
   /**
    * Create the pointsets using geometry and material.
-   * 
+   *
    * @param {THREE.Geomtry} geometryIn - Geometry of points to be rendered.
    * @param {THREE.Material} materialIn - Material to be set for the lines.
    * @param {Object} options - Provide various options
@@ -35,7 +35,7 @@ const Pointset = function () {
       const texture = getCircularTexture();
       materialIn.map = texture;
       let point = new Points(geometry, materialIn);
-      this.setMesh(point, options.localTimeEnabled, 
+      this.setMesh(point, options.localTimeEnabled,
         options.localMorphColour);
     }
   }
@@ -78,7 +78,7 @@ const Pointset = function () {
       }
       let end = current + coords.length;
       let index = 0;
-      if ((Array.isArray(labels) && labels.length === coords.length) || 
+      if ((Array.isArray(labels) && labels.length === coords.length) ||
         (typeof labels === "string")) {
         for (current; current + index < end;) {
           const labelText = typeof labels === "string" ? labels : labels[index];
@@ -90,9 +90,40 @@ const Pointset = function () {
     }
   }
 
+    /**
+   * Set the colour of the pointset and its label using the hex value
+   *
+   * @param {Number} hex - hex value of color to be set
+   */
+  this.setColourHex = function(hex) {
+    this._lod._material.color.setHex(hex);
+    if (this._lod._secondaryMaterial) {
+      this._lod._secondaryMaterial.color.setHex(hex);
+    }
+    for (let i = 0; i < labelSets.length; i++) {
+      if (labelSets[i]) {
+        labelSets[i].setColour(this._lod._material.color);
+      }
+    }
+  }
+
+  /**
+   * Set the colour of the pointset and its label
+   *
+   * @param {THREE.Color} colour - colour to be set
+   */
+  this.setColour = (colour) => {
+    this._lod.setColour(colour);
+    for (let i = 0; i < labelSets.length; i++) {
+      if (labelSets[i]) {
+        labelSets[i].setColour(this._lod._material.color);
+      }
+    }
+  }
+
   /**
    * Set the size of the points.
-   * 
+   *
    * @param {Number} size - size to be set.
    */
   this.setSize = size => {
@@ -104,7 +135,7 @@ const Pointset = function () {
 
   /**
    * Turn size attenuation on/off based on the flag.
-   * 
+   *
    * @param {Boolean} flag - Determin either size attenuation
    * should be on or off.
    */
@@ -121,7 +152,7 @@ const Pointset = function () {
   this.getVerticesByIndex = function(index) {
     if (index >= 0 && this.drawRange > index) {
       const positionAttribute = this.getMorph().geometry.getAttribute( 'position' );
-      return [ 
+      return [
         positionAttribute.getX(index),
         positionAttribute.getY(index),
         positionAttribute.getZ(index)
@@ -148,7 +179,7 @@ const Pointset = function () {
             label.setPosition(coord[0], coord[1], coord[2]);
           }
           positionAttribute.setXYZ(index++, coord[0], coord[1], coord[2]);
-          
+
         });
         positionAttribute.needsUpdate = true;
         this.boundingBoxUpdateRequired = true;
@@ -158,7 +189,7 @@ const Pointset = function () {
 
   /**
  * Turn size attenuation on/off based on the flag.
- * 
+ *
  * @param {Boolean} flag - Determin either size attenuation
  * should be on or off.
  */
