@@ -2,7 +2,7 @@ const THREE = require('three');
 const resolveURL = require('../utilities').resolveURL;
 /**
  * Provides a base class object which stores textures and rendering object.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {TexturePrimitive}
@@ -14,7 +14,7 @@ const TexturePrimitive = function (textureIn) {
 
   /**
    * Load texture data into this primitves.
-   * 
+   *
    * @param {Object} textureData - contains the informations about the textures.
    * @param {Function} finishCallback - User's function to be called once texture's
    *  is loaded.
@@ -39,7 +39,7 @@ const TexturePrimitive = function (textureIn) {
   /**
    * Initialise a texture based on the provided textureData, this should be used
    * internally only.
-   * 
+   *
    * @param {Object} textureData - contains the informations about the textures.
    * @param {Function} finishCallback - User's function to be called once texture's
    *  is loaded.

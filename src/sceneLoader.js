@@ -10,7 +10,7 @@ const PrimitivesLoader = require('./loaders/primitivesLoader').PrimitivesLoader;
 /**
  * A helper class to help with reading / importing primitives and
  * settings into a {@link Scene}.
- * 
+ *
  * @class
  * @param {Object} containerIn - Container to create the renderer on.
  * @author Alan Wu
@@ -27,7 +27,7 @@ exports.SceneLoader = function (sceneIn) {
    * This function returns a three component array, which contains
    * [totalsize, totalLoaded and errorDownload] of all the downloads happening
    * in this scene.
-   * @returns {Array} 
+   * @returns {Array}
    */
   this.getDownloadProgress = () => {
     let totalSize = 0;
@@ -134,7 +134,7 @@ exports.SceneLoader = function (sceneIn) {
 /**
    * Load a legacy model(s) format with the provided URLs and parameters. This only loads the geometry
    * without any of the metadata. Therefore, extra parameters should be provided.
-   * 
+   *
    * @deprecated
    */
   this.loadModelsURL = (region, urls, colours, opacities, timeEnabled, morphColour, finishCallback) => {
@@ -160,10 +160,10 @@ exports.SceneLoader = function (sceneIn) {
   }
 
    /**
-   * Load a legacy file format containing the viewport and its meta file from an external 
+   * Load a legacy file format containing the viewport and its meta file from an external
    * location provided by the url. Use the new metadata format with
    * {@link Zinc.SceneLoader.#loadMetadataURL} instead.
-   * 
+   *
    * @param {String} URL - address to the file containing viewport and model information.
    * @deprecated
    */
@@ -223,11 +223,11 @@ exports.SceneLoader = function (sceneIn) {
       if (finishCallback != undefined && (typeof finishCallback == 'function'))
         finishCallback(newLines);
     };
-  } 
+  }
 
   /**
    * Load lines into this scene object.
-   * 
+   *
    * @param {Boolean} timeEnabled - Indicate if  morphing is enabled.
    * @param {Boolean} morphColour - Indicate if color morphing is enabled.
    * @param {STRING} groupName - name to assign the pointset's groupname to.
@@ -251,7 +251,7 @@ exports.SceneLoader = function (sceneIn) {
       (linesloader(region, localTimeEnabled, localMorphColour, groupName, anatomicalId,
         renderOrder, options.lod, tubeLines, finishCallback))( object.geometry, object.materials );
     } else {
-      primitivesLoader.load(url, linesloader(region, localTimeEnabled, localMorphColour, groupName, 
+      primitivesLoader.load(url, linesloader(region, localTimeEnabled, localMorphColour, groupName,
         anatomicalId, renderOrder, options.lod, tubeLines, finishCallback), this.onProgress(url), this.onError(finishCallback),
         options.loaderOptions);
     }
@@ -326,8 +326,8 @@ exports.SceneLoader = function (sceneIn) {
 
   /**
    * Read a STL file into this scene, the geometry will be presented as
-   * {@link Zinc.Geometry}. 
-   * 
+   * {@link Zinc.Geometry}.
+   *
    * @param {STRING} url - location to the STL file.
    * @param {STRING} groupName - name to assign the geometry's groupname to.
    * @param {Function} finishCallback - Callback function which will be called
@@ -345,8 +345,8 @@ exports.SceneLoader = function (sceneIn) {
 
   /**
    * Read a OBJ file into this scene, the geometry will be presented as
-   * {@link Zinc.Geometry}. 
-   * 
+   * {@link Zinc.Geometry}.
+   *
    * @param {STRING} url - location to the STL file.
    * @param {STRING} groupName - name to assign the geometry's groupname to.
    * @param {Function} finishCallback - Callback function which will be called
@@ -363,10 +363,10 @@ exports.SceneLoader = function (sceneIn) {
   }
 
   /**
-   * Load a geometry into this scene, this is a subsequent called from 
+   * Load a geometry into this scene, this is a subsequent called from
    * {@link Zinc.Scene#loadMetadataURL}, although it can be used to read
    * in geometry into the scene externally.
-   * 
+   *
    * @param {String} url - regular json model file providing geometry.
    * @param {Boolean} timeEnabled - Indicate if geometry morphing is enabled.
    * @param {Boolean} morphColour - Indicate if color morphing is enabled.
@@ -432,14 +432,14 @@ exports.SceneLoader = function (sceneIn) {
           if (zincCameraControls) {
             zincCameraControls.calculateMaxAllowedDistance(scene);
           }
-        }        
+        }
       }
     };
   };
 
   /**
    * Load a pointset into this scene object.
-   * 
+   *
    * @param {Boolean} timeEnabled - Indicate if  morphing is enabled.
    * @param {Boolean} morphColour - Indicate if color morphing is enabled.
    * @param {STRING} groupName - name to assign the pointset's groupname to.
@@ -487,6 +487,8 @@ exports.SceneLoader = function (sceneIn) {
       if (newTexture) {
         newTexture.groupName = groupName;
         let myCallback = () => {
+          //Add zincObject after it has sort out all the required download
+          region.addZincObject(newTexture);
           --this.toBeDownloaded;
           if (finishCallback != undefined && (typeof finishCallback == 'function'))
             finishCallback(newTexture);
@@ -495,7 +497,6 @@ exports.SceneLoader = function (sceneIn) {
         newTexture.load(textureData, myCallback, isInline);
         newTexture.setAnatomicalId(anatomicalId);
         newTexture.setRenderOrder(renderOrder);
-        region.addZincObject(newTexture);
       }
     }
   };
@@ -513,7 +514,7 @@ exports.SceneLoader = function (sceneIn) {
 
   /**
    * Load a texture into this scene object.
-   * 
+   *
    * @param {STRING} groupName - name to assign the pointset's groupname to.
    * @param {Function} finishCallback - Callback function which will be called
    * once the glyphset is succssfully load in.
@@ -533,8 +534,8 @@ exports.SceneLoader = function (sceneIn) {
 
   /**
    * Load a glyphset into this scene object.
-   * 
-   * @param {String} metaurl - Provide informations such as transformations, colours 
+   *
+   * @param {String} metaurl - Provide informations such as transformations, colours
    * and others for each of the glyph in the glyphsset.
    * @param {String} glyphurl - regular json model file providing geometry of the glyph.
    * @param {String} groupName - name to assign the glyphset's groupname to.
@@ -556,7 +557,7 @@ exports.SceneLoader = function (sceneIn) {
 
  /**
    * Add a user provided {THREE.Geometry} into  the scene as zinc geometry.
-   * 
+   *
    * @param {Three.Geometry} geometry - The threejs geometry to be added as {@link Zinc.Geometry}.
    * @param {THREE.Color} color - Colour to be assigned to this geometry, overrided if materialIn is provided.
    * @param {Number} opacity - Opacity to be set for this geometry, overrided if materialIn is provided.
@@ -565,7 +566,7 @@ exports.SceneLoader = function (sceneIn) {
    * @param {Boolean} external - Set this to true if morph geometry is present, overrided if materialIn is provided.
    * @param {Function} finishCallback - Callback once the geometry has been added succssfully.
    * @param {THREE.Material} materialIn - Material to be set for this geometry if it is present.
-   * 
+   *
    * @returns {Zinc.Geometry}
    */
   const addZincGeometry = (
@@ -621,7 +622,7 @@ exports.SceneLoader = function (sceneIn) {
       if (materials && materials[0]) {
         material = materials[0];
       }
-      const zincGeometry = addZincGeometry(region, geometry, colour, opacity, 
+      const zincGeometry = addZincGeometry(region, geometry, colour, opacity,
         localTimeEnabled, localMorphColour, undefined, material, groupName, renderOrder, anatomicalId);
       if (options.lod && options.lod.levels) {
         for (const [key, value] of Object.entries(options.lod.levels)) {
@@ -639,7 +640,7 @@ exports.SceneLoader = function (sceneIn) {
   //Turn ISO 8601 duration string into an array.
   const parseDuration = (durationString) => {
     const regex = /P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
-    const [, years, months, weeks, days, hours, mins, secs] = 
+    const [, years, months, weeks, days, hours, mins, secs] =
       durationString.match(regex);
     return {years: years,months: months, weeks: weeks, days: days,
             hours: hours, mins: mins, secs: secs };
@@ -708,7 +709,7 @@ exports.SceneLoader = function (sceneIn) {
         lod: lod,
         renderOrder: order
       };
-      
+
       switch (item.Type) {
         case "Surfaces":
           loadSurfaceURL(region, newURL, item.MorphVertices, item.MorphColours, groupName, finishCallback, options);
@@ -776,7 +777,7 @@ exports.SceneLoader = function (sceneIn) {
 
   /**
    * Load GLTF into this scene object.
-   * 
+   *
    * @param {String} url - URL to the GLTF file
    * @param {Function} finishCallback - Callback function which will be called
    * once the glyphset is succssfully load in.
@@ -879,7 +880,7 @@ exports.SceneLoader = function (sceneIn) {
   }
 
   let getNumberOfObjectsInRegions = (regionJson) => {
-    let counts = regionJson.Primitives ? 
+    let counts = regionJson.Primitives ?
       getNumberOfDownloadsInArray(regionJson.Primitives, false) : 0;
     if (regionJson.Children) {
       Object.values(regionJson.Children).forEach(childRegion => {
@@ -936,7 +937,7 @@ exports.SceneLoader = function (sceneIn) {
   /**
     * Load a metadata file from the provided URL into this scene. Once
     * succssful scene proceeds to read each items into scene for visualisations.
-    * 
+    *
     * @param {String} url - Location of the metadata file
     * @param {Function} finishCallback - Callback function which will be called
     * @param {options} Optional settings, it can be used to ignore some regions/groups

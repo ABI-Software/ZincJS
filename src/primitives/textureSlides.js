@@ -3,10 +3,10 @@ const shader = require("../shaders/textureSlide.js");
 /**
  * Provides a class which create a texture stacks in a block
  * with shaders allowing slices of texture to be displayed.
- * 
+ *
  * @param {TextureArray} textureIn - An object of texture array
  * holding texture information.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {TextureSlides}
@@ -29,13 +29,13 @@ const TextureSlides = function (textureIn) {
     direction the slide should be facing.
     @property {Number} value - Normalised value of the location on direction.
     @property {String} id - ID of the mesh, it is only available if the settings
-    is returned from {@link TextureSlides.createSlide} or 
+    is returned from {@link TextureSlides.createSlide} or
     {@link TextureSlides.getTextureSettings}.
    */
   /**
    * Create the slides required for visualisation based on the slide settings.
    * The slides themselves are {THREE.PlanGeometry} objects.
-   * 
+   *
    * @param {SLIDE_SETTINGS} slideSettings - An array to each slide settings.
    */
   this.createSlides = slideSettings => {
@@ -114,7 +114,7 @@ const TextureSlides = function (textureIn) {
         uniforms.diffuse.value = this.texture.impl;
         uniforms.depth.value = this.texture.size.depth;
         uniforms.flipY.value = flipY;
-        
+
         const options = {
           fs: shader.fs,
           vs: shader.vs,
@@ -259,7 +259,7 @@ const TextureSlides = function (textureIn) {
    * Get the bounding box of this slides.
    * It uses the max and min of the slides position and the
    * transformation to calculate the position of the box.
-   * 
+   *
    * @return {THREE.Box3}.
    */
   this.getBoundingBox = () => {
