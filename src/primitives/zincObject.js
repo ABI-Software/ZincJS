@@ -11,7 +11,7 @@ const getUniqueId = function () {
 /**
  * Provides the base object for other primitive types.
  * This class contains multiple base methods.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {ZincObject}
@@ -33,7 +33,7 @@ const ZincObject = function() {
   this.mixer = undefined;
   this.animationGroup = undefined;
 	/**
-	 * Total duration of the animation, this value interacts with the 
+	 * Total duration of the animation, this value interacts with the
 	 * {@link Renderer#playRate} to produce the actual duration of the
 	 * animation. Actual time in second = duration / playRate.
 	 */
@@ -69,7 +69,7 @@ const ZincObject = function() {
 
 /**
  * Set the duration of the animation of this object.
- * 
+ *
  * @param {Number} durationIn - Duration of the animation.
  */
 ZincObject.prototype.setDuration = function(durationIn) {
@@ -81,7 +81,7 @@ ZincObject.prototype.setDuration = function(durationIn) {
 
 /**
  * Get the duration of the animation of this object.
- * 
+ *
  * @return {Number}
  */
 ZincObject.prototype.getDuration = function() {
@@ -99,7 +99,7 @@ ZincObject.prototype.setRegion = function(region) {
 
 /**
  * Get the region this object belongs to.
- * 
+ *
  * @return {Region}
  */
 ZincObject.prototype.getRegion = function() {
@@ -107,8 +107,8 @@ ZincObject.prototype.getRegion = function() {
 }
 
 /**
- * Get the threejs object3D. 
- * 
+ * Get the threejs object3D.
+ *
  * @return {Object}
  */
  ZincObject.prototype.getMorph = function() {
@@ -117,8 +117,8 @@ ZincObject.prototype.getRegion = function() {
 }
 
 /**
- * Get the threejs object3D. 
- * 
+ * Get the threejs object3D.
+ *
  * @return {Object}
  */
  ZincObject.prototype.getGroup = function() {
@@ -126,7 +126,7 @@ ZincObject.prototype.getRegion = function() {
 }
 
 /**
- * Set the internal threejs object3D. 
+ * Set the internal threejs object3D.
  */
  ZincObject.prototype.setMorph = function(mesh) {
   this.morph = mesh;
@@ -147,7 +147,7 @@ ZincObject.prototype.checkTransparentMesh = function() {
 
 /**
  * Set the mesh function for zincObject.
- * 
+ *
  * @param {THREE.Mesh} mesh - Mesh to be set for this zinc object.
  * @param {Boolean} localTimeEnabled - A flag to indicate either the mesh is
  * time dependent.
@@ -201,7 +201,7 @@ ZincObject.prototype.setMesh = function(mesh, localTimeEnabled, localMorphColour
 
 /**
  * Set isPickable for this ZincObject.
- * 
+ *
  * @param {String} isPickable - Boolean to enable object pick.
  */
 ZincObject.prototype.setIsPickable = function(isPickable) {
@@ -213,7 +213,7 @@ ZincObject.prototype.setIsPickable = function(isPickable) {
 
 /**
  * Set the anatomicalId for this ZincObject.
- * 
+ *
  * @param {String} anatomicalId - Id to be set.
  */
 ZincObject.prototype.setAnatomicalId = function(anatomicalId) {
@@ -222,7 +222,7 @@ ZincObject.prototype.setAnatomicalId = function(anatomicalId) {
 
 /**
  * Set the name for this ZincObject.
- * 
+ *
  * @param {String} groupNameIn - Name to be set.
  */
 ZincObject.prototype.setName = function(groupNameIn) {
@@ -231,9 +231,9 @@ ZincObject.prototype.setName = function(groupNameIn) {
 }
 
 /**
- * Get the local time of this geometry, it returns a value between 
+ * Get the local time of this geometry, it returns a value between
  * 0 and the duration.
- * 
+ *
  * @return {Number}
  */
 ZincObject.prototype.getCurrentTime = function() {
@@ -247,7 +247,7 @@ ZincObject.prototype.getCurrentTime = function() {
 
 /**
  * Set the local time of this geometry.
- * 
+ *
  * @param {Number} time - Can be any value between 0 to duration.
  */
 ZincObject.prototype.setMorphTime = function(time) {
@@ -264,7 +264,7 @@ ZincObject.prototype.setMorphTime = function(time) {
       this.mixer.update( 0.0 );
     }
   } else {
-    let newTime = time; 
+    let newTime = time;
     if (time > this.duration)
       newTime = this.duration;
     else if (0 > time)
@@ -286,7 +286,7 @@ ZincObject.prototype.setMorphTime = function(time) {
 
 /**
  * Check if the geometry is time varying.
- * 
+ *
  * @return {Boolean}
  */
 ZincObject.prototype.isTimeVarying = function() {
@@ -297,7 +297,7 @@ ZincObject.prototype.isTimeVarying = function() {
 
 /**
  * Get the visibility of this Geometry.
- * 
+ *
  */
 ZincObject.prototype.getVisibility = function() {
   return this.visible;
@@ -305,8 +305,8 @@ ZincObject.prototype.getVisibility = function() {
 
 /**
  * Set the visibility of this Geometry.
- * 
- * @param {Boolean} visible - a boolean flag indicate the visibility to be set 
+ *
+ * @param {Boolean} visible - a boolean flag indicate the visibility to be set
  */
 ZincObject.prototype.setVisibility = function(visible) {
   if (visible !== this.visible) {
@@ -319,8 +319,8 @@ ZincObject.prototype.setVisibility = function(visible) {
 /**
  * Set the opacity of this Geometry. This function will also set the isTransparent
  * flag according to the provided alpha value.
- * 
- * @param {Number} alpah - Alpha value to set for this geometry, 
+ *
+ * @param {Number} alpah - Alpha value to set for this geometry,
  * can be any value between from 0 to 1.0.
  */
 ZincObject.prototype.setAlpha = function(alpha) {
@@ -337,7 +337,7 @@ ZincObject.prototype.setAlpha = function(alpha) {
  * The rendering will be culled if it is outside of the frustrum
  * when this flag is set to true, it should be set to false if
  * morphing is enabled.
- * 
+ *
  * @param {Boolean} flag - Set frustrum culling on/off based on this flag.
  */
 ZincObject.prototype.setFrustumCulled = function(flag) {
@@ -348,7 +348,7 @@ ZincObject.prototype.setFrustumCulled = function(flag) {
 /**
  * Set rather a zinc object should be displayed using per vertex colour or
  * not.
- * 
+ *
  * @param {Boolean} vertexColors - Set display with vertex color on/off.
  */
 ZincObject.prototype.setVertexColors = function(vertexColors) {
@@ -359,7 +359,7 @@ ZincObject.prototype.setVertexColors = function(vertexColors) {
 
 /**
  * Get the colour of the mesh.
- * 
+ *
  * @return {THREE.Color}
  */
 ZincObject.prototype.getColour = function() {
@@ -367,10 +367,10 @@ ZincObject.prototype.getColour = function() {
     return this._lod._material.color;
 	return undefined;
 }
-  
+
 /**
  * Set the colour of the mesh.
- * 
+ *
  * @param {THREE.Color} colour - Colour to be set for this geometry.
  */
 ZincObject.prototype.setColour = function(colour) {
@@ -379,7 +379,7 @@ ZincObject.prototype.setColour = function(colour) {
 
 /**
  * Set the colour of the mesh.
- * 
+ *
  * @param {THREE.Color} colour - Colour to be set for this geometry.
  */
 ZincObject.prototype.setGreyScale = function(flag) {
@@ -406,7 +406,7 @@ ZincObject.prototype.setGreyScale = function(flag) {
 
 /**
  * Get the colour of the mesh in hex string form.
- * 
+ *
  * @return {String}
  */
 ZincObject.prototype.getColourHex = function() {
@@ -419,7 +419,7 @@ ZincObject.prototype.getColourHex = function() {
 
 /**
  * Set the colour of the mesh using hex in string form.
- * 
+ *
  * @param {String} hex - The colour value in hex form.
  */
 ZincObject.prototype.setColourHex = function(hex) {
@@ -431,7 +431,7 @@ ZincObject.prototype.setColourHex = function(hex) {
 
 /**
  * Set the emissive rgb of the mesh using rgb.
- * 
+ *
  * @param {String} colour - The colour value in rgb form.
  */
 ZincObject.prototype.setEmissiveRGB = function(colour) {
@@ -446,7 +446,7 @@ ZincObject.prototype.setEmissiveRGB = function(colour) {
 
 /**
  * Set the material of the geometry.
- * 
+ *
  * @param {THREE.Material} material - Material to be set for this geometry.
  */
 ZincObject.prototype.setMaterial = function(material) {
@@ -455,17 +455,17 @@ ZincObject.prototype.setMaterial = function(material) {
 
 /**
  * Get the index of the closest vertex to centroid.
- * 
+ *
  * @return {Number} - integer index in the array
  */
 ZincObject.prototype.getClosestVertexIndex = function() {
   let closestIndex = -1;
   const morph = this.getMorph();
-  if (morph && morph.geoemtry) {
+  if (morph && morph.geometry) {
     let position = morph.geometry.attributes.position;
-    this._b1.setFromBufferAttribute(position);
-    this._b1.getCenter(this._v1);
     if (position) {
+      this._b1.setFromBufferAttribute(position);
+      this._b1.getCenter(this._v1);
       let distance = -1;
       let currentDistance = 0;
       for (let i = 0; i < position.count; i++) {
@@ -485,7 +485,7 @@ ZincObject.prototype.getClosestVertexIndex = function() {
 
 /**
  * Get the  closest vertex to centroid.
- * 
+ *
  * @return {THREE.Vector3}
  */
 ZincObject.prototype.getClosestVertex = function(applyMatrixWorld) {
@@ -516,14 +516,15 @@ ZincObject.prototype.getClosestVertex = function(applyMatrixWorld) {
       return applyMatrixWorld ? position.applyMatrix4(morph.matrixWorld) : position;
     }
   }
+  //Matrix world has already been applied
   this.getBoundingBox();
   position.copy(this.center);
-  return applyMatrixWorld ? position.applyMatrix4(this.morph.matrixWorld) : position;
+  return position;
 }
 
 /**
  * Get the bounding box of this geometry.
- * 
+ *
  * @return {THREE.Box3}.
  */
 ZincObject.prototype.getBoundingBox = function() {
@@ -558,13 +559,13 @@ ZincObject.prototype.dispose = function() {
 }
 
 /**
- * Check if marker is enabled based on the objects settings with 
+ * Check if marker is enabled based on the objects settings with
  * the provided scene options.
- * 
- * @return {Boolean} 
+ *
+ * @return {Boolean}
  */
 ZincObject.prototype.markerIsRequired = function(options) {
-  if (this.visible && 
+  if (this.visible &&
     (this.markerMode === "on" || (options && options.displayMarkers &&
     (this.markerMode === "inherited")))) {
       return true;
@@ -573,7 +574,7 @@ ZincObject.prototype.markerIsRequired = function(options) {
 }
 
 /**
- * Update the marker's position and size based on current viewport. 
+ * Update the marker's position and size based on current viewport.
  */
 ZincObject.prototype.updateMarker = function(playAnimation, options) {
   if ((playAnimation == false) &&
@@ -594,7 +595,7 @@ ZincObject.prototype.updateMarker = function(playAnimation, options) {
       }
       if (!this.marker.isEnabled()) {
         if (options.markersList &&
-          (!(this.marker.uuid in options.markersList))) {    
+          (!(this.marker.uuid in options.markersList))) {
             ndcToBeUpdated = true;
           options.markersList[this.marker.uuid] = this.marker;
         }
@@ -647,7 +648,7 @@ ZincObject.prototype.setRenderOrder = function(renderOrder) {
 
 /**
  * Get the windows coordinates.
- * 
+ *
  * @return {Object} - position and rather the closest vertex is on screen.
  */
 ZincObject.prototype.getClosestVertexDOMElementCoords = function(scene) {
@@ -675,8 +676,8 @@ ZincObject.prototype.getClosestVertexDOMElementCoords = function(scene) {
  * "off" - marker is disabled regardless of settings of scene
  * "inherited" - Marker settings on scene will determine the visibility
  *  of the marker.
- * 
- * @return {Boolean} 
+ *
+ * @return {Boolean}
  */
  ZincObject.prototype.setMarkerMode = function(mode, options) {
   if (mode !== this.markerMode) {
@@ -764,7 +765,9 @@ ZincObject.prototype.setPosition = function(x, y, z) {
   const group = this.getGroup();
   if (group) {
     group.position.set(x, y, z);
+    group.matrixWorldNeedsUpdate = true;
     group.updateMatrix();
+    group.updateWorldMatrix(true, true);
     this.boundingBoxUpdateRequired = true;
   }
 }
