@@ -66,7 +66,10 @@ const Pointset = function () {
    */
   this.addPoints = (coords, labels, colour) => {
     if (coords && coords.length > 0) {
-      let current = this.drawRange - 1;
+      let current = this.drawRange;
+      if (current === -1) {
+        current = 0;
+      }
       const geometry = this.addVertices(coords);
       let mesh = this.getMorph();
       if (!mesh) {
@@ -80,9 +83,10 @@ const Pointset = function () {
       let index = 0;
       if ((Array.isArray(labels) && labels.length === coords.length) ||
         (typeof labels === "string")) {
+        const size = labelSets.length;
         for (current; current + index < end;) {
           const labelText = typeof labels === "string" ? labels : labels[index];
-          addLabel(index, coords[index], labelText, colour);
+          addLabel(current + index, coords[index], labelText, colour);
           index++;
         }
       }
@@ -199,6 +203,7 @@ const Pointset = function () {
     }
     Pointset.prototype.render.call(this, delta, playAnimation, cameraControls, options);
   }
+
 }
 
 Pointset.prototype = Object.create((require('./zincObject').ZincObject).prototype);

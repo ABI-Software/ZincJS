@@ -8,7 +8,7 @@ const LineSegmentsGeometry = require("../three/line/LineSegmentsGeometry").LineS
  * Provides an object which stores lines.
  * This is created when a valid json file containing lines is read into a {@link Zinc.Scene}
  * object.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {Lines}
@@ -20,7 +20,7 @@ const Lines2 = function () {
 
   /**
    * Create the line segements using geometry and material.
-   * 
+   *
    * @param {Array} arrayIn - Geometry of lines to be rendered.
    * @param {THREE.Material} materialIn - Material to be set for the lines.
    * @param {Object} options - Provide various options
@@ -43,7 +43,7 @@ const Lines2 = function () {
 
   /**
    * Set the width for the lines.
-   * 
+   *
    * @param {Number} width - Width of the lines.
    */
 	this.setWidth = width => {
@@ -121,6 +121,7 @@ const Lines2 = function () {
       if (!mesh || 0 > i || maxIndex >= this.drawRange) {
         return;
       } else {
+
         let index = i * 3;
         coords.forEach(coord => {
           positions[index++] = coord[0];
