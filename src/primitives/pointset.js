@@ -79,6 +79,7 @@ const Pointset = function () {
         geometry.colorsNeedUpdate = true;
         this.createMesh(geometry, material, options);
       }
+
       let end = current + coords.length;
       let index = 0;
       if ((Array.isArray(labels) && labels.length === coords.length) ||
@@ -86,7 +87,7 @@ const Pointset = function () {
         const size = labelSets.length;
         for (current; current + index < end;) {
           const labelText = typeof labels === "string" ? labels : labels[index];
-          addLabel(current + index, coords[index], labelText, colour);
+          addLabel(current + index, coords[index], labelText, this._lod._material.color);
           index++;
         }
       }
