@@ -3,7 +3,7 @@ const resolveURL = require('./utilities').resolveURL;
 
 /**
  * Object with containg viewport information used in ZincJS.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {Viewport}
@@ -32,24 +32,24 @@ const Viewport = function () {
 
 /**
  * Provides the basic controls for a scene.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {CameraControls}
  */
 const CameraControls = function ( object, domElement, renderer, scene ) {
 	const MODE = { NONE: -1, DEFAULT: 0, PATH: 1, SMOOTH_CAMERA_TRANSITION: 2, AUTO_TUMBLE: 3, ROTATE_TRANSITION: 4, MINIMAP: 5, SYNC_CONTROL: 6 };
-  /** 
+  /**
    * Actions states.
    * Available states are NONE, ROTATE, ZOOM, PAN, TOUCH_ROTATE, TOUCH_ZOOM, TOUCH_PAN and SCROLL.
-   * @property {Object} 
+   * @property {Object}
    */
 	const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM: 4, TOUCH_PAN: 5, SCROLL: 6, KEYBOARD_ZOOM: 7, KEYBOARD_ROTATE: 8, KEYBOARD_PAN: 9 };
   const ROTATE_DIRECTION = { NONE: -1, FREE: 1, HORIZONTAL: 2, VERTICAL: 3 };
 	const KEYBOARD = { ARROWLEFT: 37, ARROWUP: 38, ARROWRIGHT: 39, ARROWDOWN: 40, NUMPADADD: 107, NUMPADSUBTRACT: 109, EQUAL: 187, MINUS: 189 };
-  /** 
+  /**
    * Available click actions are MAIN, AUXILIARY and SECONARY.
-   * @property {Object} 
+   * @property {Object}
    */
 	const CLICK_ACTION = {};
 	CLICK_ACTION.MAIN = STATE.ROTATE;
@@ -138,9 +138,47 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
     }
   }
 
+  const updateNearAndFarPlane = (travalDist) => {
+    const ratio = 0.001;
+    _a.copy(this.cameraObject.position);
+    const length = _a.sub(this.cameraObject.target).length();
+    this.cameraObject.near = Math.max(0.0001, length * ratio);
+    this.cameraObject.far = this.cameraObject.near * 10000;
+    /*
+    const near_far_minimum_ratio = 0.0001;
+    //const minNear = near_far_minimum_ratio * this.cameraObject.far;
+    const minNear = 0.0001;
+    if (minNear < (this.cameraObject.near + travalDist + this.near_plane_fly_debt)) {
+      if (this.near_plane_fly_debt != 0.0)	{
+        this.near_plane_fly_debt += travalDist;
+        if (this.near_plane_fly_debt > 0.0) {
+          this.cameraObject.near += this.near_plane_fly_debt;
+          this.cameraObject.far += this.near_plane_fly_debt;
+          this.near_plane_fly_debt = 0.0;
+        }
+        else {
+          this.cameraObject.near += travalDist;
+          this.cameraObject.far += travalDist;
+        }
+      }
+    }
+    else {
+      //if (this.near_plane_fly_debt == 0.0 ) {
+      if (this.cameraObject.near !== 0.0001) {
+        const diff = this.cameraObject.near - minNear;
+        this.cameraObject.near = minNear;
+        this.cameraObject.far -= diff;
+        this.near_plane_fly_debt -= diff;
+      } else {
+        this.near_plane_fly_debt += travalDist;
+      }
+    }
+    */
+  }
+
   /**
    * Add a viewport to the list of available named viewports.
-   * 
+   *
    * @param {String} name - Name of the viewport
    * @param {Viewport} viewportName - Viewport to be added
    */
@@ -151,9 +189,9 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Set the default viewport for this {@link CameraControls}.
-   * 
+   *
    * @param {String} defaultName - Name of the viewport
-   * 
+   *
    * @return {Boolean} true if set successfully, false otherwise.
    */
   this.setDefaultViewport = defaultName => {
@@ -166,18 +204,18 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Get the name of the default viewport.
-   * 
-   * 
+   *
+   *
    * @return {String}
    */
   this.getDefaultViewport = () => {
 		return defaultViewport;
 	}
-	
+
   /**
    * Get the viewport with the provied name stored in this object.
    * @param {String} name - Name of the viewport
-   * 
+   *
    * @return {Viewport}
    */
 	this.getViewportOfName = name => {
@@ -187,7 +225,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
   /**
    * Set the viewport with a name if it is found in the list.
    * @param {String} name - Name of the viewport
-   * 
+   *
    * @return {Boolean} if viewport is found and set, otherwise false.
    */
   this.setCurrentViewport = name => {
@@ -200,7 +238,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Set the direction of rotation allowed with this control.
-   * 
+   *
    * @param {String} mode - available options are none, horizontal,
    * vertical and free.
    */
@@ -220,7 +258,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
         rotateMode = ROTATE_DIRECTION.FREE;
     }
   }
-	
+
 	this.onResize = () => {
 		if (rect)
 			rect = undefined;
@@ -231,14 +269,14 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
 	this.getVisibleHeightAtZDepth = ( depth ) => {
 		// compensate for cameras not positioned at z=0
-		
+
 		const cameraOffset = this.cameraObject.position.distanceTo(this.cameraObject.target);
 		if ( depth < cameraOffset ) depth -= cameraOffset;
 		else depth += cameraOffset;
-	
+
 		// vertical fov in radians
-		const vFOV = this.cameraObject.fov * Math.PI / 180; 
-	
+		const vFOV = this.cameraObject.fov * Math.PI / 180;
+
 		// Math.abs to ensure the result is always positive
 		return 2 * Math.tan( vFOV / 2 ) * Math.abs( depth );
 	};
@@ -251,13 +289,13 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Get normalised coordinates from windows coordinates.
-   * 
+   *
    * @param {String} x
    * @param {String} y
    * @param {THREE.Vector2} positionIn - Optional, write the value into
-   * this object if it is provided, otherwise a new object will 
+   * this object if it is provided, otherwise a new object will
    * be created and returned.
-   * 
+   *
    * @return {THREE.Vector2} containing the normalised x and y coordinates.
    */
   this.getNDCFromDocumentCoords = (x, y, positionIn) => {
@@ -270,13 +308,13 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Get the relative windows coordinates from normalised coordiantes.
-   * 
-   * @param {String} x 
+   *
+   * @param {String} x
    * @param {String} y
    * @param {THREE.Vector2} positionIn - Optional, write the value into
-   * this object if it is provided, otherwise a new object will 
+   * this object if it is provided, otherwise a new object will
    * be created and returned.
-   * 
+   *
    * @return {THREE.Vector2} containing the relative x and y coordinates.
    */
   this.getRelativeCoordsFromNDC = (x, y, positionIn) => {
@@ -289,7 +327,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Map a mouse click to the specified action.
-   * 
+   *
    * @param {String} buttonName - please see {@link CLICK_ACTION}
    * @param {String} actionName - please see {@link STATE}
    */
@@ -298,9 +336,9 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
   }
 
 	/**
-	 * 
-	 * @param {HTML} element 
-	 * @param {Number} index 
+	 *
+	 * @param {HTML} element
+	 * @param {Number} index
 	 */
 	const setCanvasTabindex = (element, index) => {
 		if (element instanceof HTMLCanvasElement)
@@ -311,12 +349,12 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
   const checkTravelDistance = () => {
     if (maxDist > 0) {
       const newDist = _tempEye.distanceTo(sceneSphere.center);
-      return (maxDist > newDist || 
+      return (maxDist > newDist ||
         this.cameraObject.position.distanceTo(sceneSphere.center) > newDist );
     }
     return true;
   }
-  
+
   const translateViewport = translation => {
     _tempEye.copy(this.cameraObject.position).add(translation);
     if (checkTravelDistance()) {
@@ -325,7 +363,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
       this.updateDirectionalLight();
     }
   }
-	
+
 	const onDocumentMouseDown = event => {
     updateRect(false);
     // Check if mouse event hapens inside the minimap
@@ -344,7 +382,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
       } else if (event.button == 1) {
         event.preventDefault();
         this._state = CLICK_ACTION.AUXILIARY;
-        } 
+        }
         else if (event.button == 2) {
           this._state = CLICK_ACTION.SECONDARY;
         }
@@ -381,7 +419,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 			}
 		}
 	}
-	
+
 	const onDocumentMouseUp = event => {
     this._state = STATE.NONE;
     if (currentMode == MODE.MINIMAP)
@@ -392,11 +430,11 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 			}
 		}
 	}
-	
+
 	const onDocumentMouseLeave = event => {
 		this._state = STATE.NONE;
 	}
-	
+
 	const onDocumentTouchStart = event => {
     updateRect(false);
 		const len = event.touches.length;
@@ -419,10 +457,10 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 			this.pointer_x = event.touches[0].clientX - rect?.left;
 			this.pointer_y = event.touches[0].clientY - rect?.top;
 			this.previous_pointer_x = this.pointer_x;
-			this.previous_pointer_y= this.pointer_y;			
+			this.previous_pointer_y= this.pointer_y;
 		}
 	}
-	
+
 	const onDocumentTouchMove = event => {
 		event.preventDefault();
 		event.stopPropagation();
@@ -444,10 +482,10 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 						this.pointer_y = event.touches[0].clientY - rect.top;
 					}
 				}
-			}				
+			}
 		}
 	}
-	
+
 	const onDocumentTouchEnd = event => {
 		const len = event.touches.length;
 		this.touchZoomDistanceStart = this.touchZoomDistanceEnd = 0;
@@ -475,11 +513,11 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
         }
         observer.disconnect();
       });
-      
+
       observer.observe(this.domElement);
     }
   }
-	
+
 	const onDocumentWheelEvent = event => {
     updateRect(false);
 		this._state = STATE.SCROLL;
@@ -489,9 +527,9 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		else if (event.deltaY < 0)
 			changes = this.zoomRate * -1;
 		zoomSize = zoomSize + changes;
-		event.preventDefault(); 
-		event.stopImmediatePropagation();  
-	}	
+		event.preventDefault();
+		event.stopImmediatePropagation();
+	}
 
 	const onDocumentKeydownEvent = event => {
 		updateRect(false);
@@ -598,7 +636,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	    const rel_eyea = axis.dot(_rel_eye);
 	    const rel_eyeb = _b.dot(_rel_eye);
 	    const rel_eyec = _c.dot(_rel_eye);
-	    const upa = axis.dot(this.cameraObject.up); 
+	    const upa = axis.dot(this.cameraObject.up);
 	    const upb = _b.dot(this.cameraObject.up);
 	    const upc = _c.dot(this.cameraObject.up);
 	    const cos_angle = Math.cos(angle);
@@ -608,7 +646,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	                  cos_angle*_b.z+sin_angle*_c.z);
 	    _new_c.set(cos_angle*_c.x-sin_angle*_b.x,
 	                  cos_angle*_c.y-sin_angle*_b.y,
-	                  cos_angle*_c.z-sin_angle*_b.z);               
+	                  cos_angle*_c.z-sin_angle*_b.z);
       _v.copy(this.cameraObject.target);
 	    _v.x = _v.x + axis.x*rel_eyea + _new_b.x*rel_eyeb+_new_c.x*rel_eyec;
 	    _v.y = _v.y + axis.y*rel_eyea + _new_b.y*rel_eyeb+_new_c.y*rel_eyec;
@@ -618,10 +656,10 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
             axis.z*upa+_new_b.z*upb+_new_c.z*upc);
 	    return {position: _v, up: _a};
 	}
-	
+
   /**
    * Rotate around the axis with the amount specified by angle.
-   * 
+   *
    * @param {THREE.Vector3} axis - The rotational axis.
    * @param {Number} Angle - Specify how much the camera shoudl rotate by.
    */
@@ -682,7 +720,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		this.previous_pointer_x = this.pointer_x;
 		this.previous_pointer_y = this.pointer_y;
 	}
-	
+
 	const calculateZoomDelta = () => {
 		let delta = 0;
 		if (this._state === STATE.ZOOM)
@@ -706,55 +744,31 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		if (typeof this.cameraObject !== "undefined")
 		{
       const height = rect.height;
-
 			const a = this.cameraObject.position.clone();
 			a.sub(this.cameraObject.target);
 			const dist = a.length();
 			const dy = 1.5 * delta_y/height;
-			if ((dist + dy*dist) > 0.01) {
+      const travalDist = dist * dy;
+			if ((dist + travalDist) > 0.01) {
 				a.normalize()
         _tempEye.copy(this.cameraObject.position);
-				_tempEye.x += a.x*dy*dist;
-				_tempEye.y += a.y*dy*dist;
-				_tempEye.z += a.z*dy*dist;
+				_tempEye.x += a.x*travalDist;
+				_tempEye.y += a.y*travalDist;
+				_tempEye.z += a.z*travalDist;
         if (checkTravelDistance()) {
           this.cameraObject.position.copy(_tempEye);
           this.updateDirectionalLight();
-          const near_far_minimum_ratio = 0.00001;
-          if ((near_far_minimum_ratio * this.cameraObject.far) <
-            (this.cameraObject.near + dy*dist + this.near_plane_fly_debt)) {
-            if (this.near_plane_fly_debt != 0.0)	{
-              this.near_plane_fly_debt += dy*dist;
-              if (this.near_plane_fly_debt > 0.0) {
-                this.cameraObject.near += this.near_plane_fly_debt;
-                this.cameraObject.far += this.near_plane_fly_debt;
-                this.near_plane_fly_debt = 0.0;
-              }
-              else {
-                this.cameraObject.near += dy*dist;
-                this.cameraObject.far += dy*dist;
-              }
-            }			
-          }
-          else {
-            if (this.near_plane_fly_debt == 0.0) {
-              const diff = this.cameraObject.near - near_far_minimum_ratio * this.cameraObject.far;
-              this.cameraObject.near = near_far_minimum_ratio * this.cameraObject.far;
-              this.cameraObject.far -= diff;
-              this.near_plane_fly_debt -= near_far_minimum_ratio * this.cameraObject.far;
-            }
-            this.near_plane_fly_debt += dy*dist;
-          }
+          updateNearAndFarPlane(travalDist);
           hasUpdated = true;
         }
 			}
 		}
   }
-	
+
 	const flyZoom = () => {
     const delta_y = calculateZoomDelta();
     this.changeZoomByValue(delta_y);
- 
+
 		if (this._state === STATE.ZOOM) {
 			this.previous_pointer_x = this.pointer_x;
 			this.previous_pointer_y = this.pointer_y;
@@ -764,7 +778,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
       this._state = STATE.NONE;
 		}
 	}
-	
+
 	this.setDirectionalLight = directionalLightIn => {
 		this.directionalLight = directionalLightIn;
 	};
@@ -779,7 +793,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 					this.cameraObject.position.z);
 		}
 	}
-	
+
 	/**
    * Enable the camera control.
    */
@@ -828,11 +842,11 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		cameraPath = pathData.CameraPath;
 		numberOfCameraPoint = pathData.NumberOfPoints;
 	}
-	
+
   /**
    * This is an experimental feature. It loads a path - point to point which
    * the camera will travel.
-   * 
+   *
    * @param {String} path_url - The path.
    * @param {requestCallback} finishCallback - The callback once the path is load.
    */
@@ -853,7 +867,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Set the duration for the camera to travel along the path.
-   * 
+   *
    * @param {Number} durationIn - the duration for the path.
    */
 	this.setPathDuration = durationIn => {
@@ -863,21 +877,21 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
     if (rotateCameraTransitionObject)
       rotateCameraTransitionObject.setDuration(duration);
 	}
-	
+
   /**
-   * Get the playRate - this determines how fast it takes to 
+   * Get the playRate - this determines how fast it takes to
    * finish one duration.
-   * 
+   *
    * @return {Number}
    */
 	 this.getPlayRate = () => {
 	    return playRate;
 	  }
-	
+
   /**
-   * Set the playRate - this determines how fast it takes to 
+   * Set the playRate - this determines how fast it takes to
    * finish one duration.
-   * 
+   *
    * @param {Number} playRateIn - The play rate speed.
    */
 	this.setPlayRate = playRateIn => {
@@ -887,7 +901,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
   /**
    * Update the internal timer by the set amount, this can
    * be used to force a time update by setting delta to zero.
-   * 
+   *
    * @param {Number} delta - The amount of time to increment
    * the time by.
    */
@@ -897,19 +911,19 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 			targetTime = targetTime - duration
 		inbuildTime = targetTime;
 	};
-	
+
   /**
    * Get the current inbuild time,
-   * 
+   *
    * @return {Number}
    */
 	 this.getTime = () => {
 	    return inbuildTime;
 	  }
-	
+
   /**
    * Set the current inbuild time,
-   * 
+   *
    * @param {Number} timeIn - this will be used as the current time,
    * it should be between the range of zero and the set duration.
    */
@@ -921,11 +935,11 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	  else
 	    inbuildTime = timeIn;
 	}
-	
+
   /**
    * Get the number of frame which is determine by number of points
    * in the camera path.
-   * 
+   *
    * @return {Number}
    */
 	this.getNumberOfTimeFrame = () => {
@@ -935,7 +949,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
   /**
    * Get the current time frame and it will return three values in
    * an array.
-   * 
+   *
    * @return {Array} - bottom frame, top frame and the proportion.
    */
 	this.getCurrentTimeFrame = () => {
@@ -955,13 +969,13 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	  } else if (numberOfCameraPoint == 1) {
 	    return [0, 0, 0];
 	  }
-	    
+
 	  return undefined;
 	}
-	
+
   /**
    * Set the current time frame.
-   * 
+   *
    * @param {Number} targetTimeFrame - bottom frame, top frame and the proportion.
    */
 	this.setCurrentTimeFrame = targetTimeFrame => {
@@ -976,7 +990,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Update the progress on the path by the specified amount - delta.
-   * 
+   *
    * @param {Number} delta - The amount of time to increment
    */
 	const updatePath = delta => {
@@ -1000,11 +1014,11 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 				if (updateLightWithPathFlag) {
 					this.directionalLight.position.set(current_positions[0], current_positions[1], current_positions[2]);
 					this.directionalLight.target.position.set(top_pos[0], top_pos[1], top_pos[2]);
-				}					
+				}
 			}
 		}
 	};
-	
+
   /**
    * Force recalculation of the current path.
    */
@@ -1031,10 +1045,10 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
       ndcControl.triggerCallback();
     }
   }
-	
+
   /**
    * Update all controls related changes - including calculation of the viewport.
-   * 
+   *
    * @param {Number} timeChanged - Time eclipse since last called.
    */
 	this.update = timeChanged => {
@@ -1087,7 +1101,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		if (deviceOrientationControl) {
 			updated = true;
 			deviceOrientationControl.update();
-			//this.directionalLight.target.position.set(this.cameraObject.target.x, 
+			//this.directionalLight.target.position.set(this.cameraObject.target.x,
 			//	this.cameraObject.target.y, this.cameraObject.target.z);
 		} else {
 			this.cameraObject.lookAt( this.cameraObject.target );
@@ -1098,7 +1112,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
 		return updated;
 	};
-	
+
   /**
    * Switch to path mode and begin traveling through the camera path.
    */
@@ -1112,26 +1126,26 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	this.stopPath = () => {
 		currentMode = MODE.DEFAULT;
 	}
-	
+
   /**
    * Check rather the control is currently in path mode.
-   * 
+   *
    * @return {Boolean}
    */
 	this.isPlayingPath = () => {
 		return (currentMode === MODE.PATH);
 	}
-	
+
   /**
    * Enable directional light update as the camera
    * is traveling through path.
-   * 
+   *
    * @param {Boolean} flag
    */
 	this.enableDirectionalLightUpdateWithPath = flag => {
 		updateLightWithPathFlag = flag;
 	}
-	
+
   /**
    * Enable rotation using the devices's accelerometer.
    */
@@ -1179,7 +1193,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Set the current camera settings with the provided viewport.
-   * 
+   *
    * @param {Viewport} newViewport - viewport settings.
    */
 	this.setCurrentCameraSettings = newViewport => {
@@ -1188,7 +1202,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		if (newViewport.farPlane)
 			this.cameraObject.far = newViewport.farPlane;
 		if (newViewport.eyePosition)
-			this.cameraObject.position.set( newViewport.eyePosition[0], 
+			this.cameraObject.position.set( newViewport.eyePosition[0],
 					newViewport.eyePosition[1], newViewport.eyePosition[2]);
 		if (newViewport.targetPosition)
 			this.cameraObject.target.set( newViewport.targetPosition[0],
@@ -1203,30 +1217,26 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Get the viewport based on centre, radius, view_angle and clip distance.
-   * 
+   *
    * @param {Number} centreX - x coordinate of the centre.
    * @param {Number} centreY - y coordinate of the centre.
    * @param {Number} centreZ - z coordinate of the centre.
    * @param {Number} radius - radius if the viewport.
    * @param {Number} view_angle - view angle.
    * @param {Number} clip_distance - clip_distance between the near and far plane.
-   * 
+   *
    * @return {Viewport}
-   */	
+   */
 	this.getViewportFromCentreAndRadius = (centreX, centreY, centreZ, radius, view_angle, clip_distance) => {
-		let eyex = this.cameraObject.position.x-this.cameraObject.target.x;
-		let eyey = this.cameraObject.position.y-this.cameraObject.target.y;
-		let eyez = this.cameraObject.position.z-this.cameraObject.target.z;
-		const fact = 1.0/Math.sqrt(eyex*eyex+eyey*eyey+eyez*eyez);
-		eyex = eyex * fact;
-		eyey = eyey * fact;
-		eyez = eyez * fact;
+    _a.copy(this.cameraObject.position);
+    _a.sub(this.cameraObject.target);
+    _a.normalize();
 		/* look at the centre of the sphere */
 		const localTargetPosition = [centreX, centreY, centreZ];
 		/* shift the eye position to achieve the desired view_angle */
 		const eye_distance = radius/Math.tan(view_angle*Math.PI/360.0);
-		const localEyePosition = [ centreX + eyex*eye_distance,  centreY + eyey*eye_distance,
-		                    centreZ + eyez*eye_distance];
+		const localEyePosition = [ centreX + _a.x*eye_distance,  centreY + _a.y*eye_distance,
+		                    centreZ + _a.z*eye_distance];
 		const localFarPlane = eye_distance+clip_distance;
 		let localNearPlane = 0.0;
 		const nearClippingFactor = 0.95;
@@ -1245,16 +1255,16 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		newViewport.targetPosition = localTargetPosition;
 		newViewport.upVector = [this.cameraObject.up.x, this.cameraObject.up.y,
 		                        this.cameraObject.up.z];
-		
+
 		return newViewport;
 	}
 
 	  /**
    * Get the viewport for the boudning box
-   * 
+   *
    * @param {Number} boundingBox - y coordinate of the centre.
    * @return {Viewport}
-   */	
+   */
 	this.getViewportFromBoundingBox = (boundingBox, radiusScale) => {
 		const radius = boundingBox.min.distanceTo(boundingBox.max) / 2.0 * radiusScale;
 		const centreX = (boundingBox.min.x + boundingBox.max.x) / 2.0;
@@ -1268,7 +1278,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Get the current camera viewport.
-   * 
+   *
    * @return {Viewport}
    */
 	this.getCurrentViewport = () => {
@@ -1286,22 +1296,22 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		currentViewport.upVector[2] = this.cameraObject.up.z;
 		return currentViewport;
 	}
-	
+
 	this.getDefaultEyePosition = () => {
 		return eyePosition;
 	}
-	
+
 	this.getDefaultTargetPosition = () => {
 		return targetPosition;
 	}
 
   /**
-   * Setup a smooth transition object which transition the camera from one 
-   * viewport to the other in the specified duration. This will not work if 
+   * Setup a smooth transition object which transition the camera from one
+   * viewport to the other in the specified duration. This will not work if
    * {@link rotateCameraTransition} is active.
    * To use this object, the transition must be enabled using
    * {@link enableCameraTransition}.
-   * 
+   *
    * @param {Viewport} startingViewport - the starting viewport
    * @param {Viewport} endingViewport - the viewport ti end the transistion with.
    * @param {Number} durationIn - duration of the smooth transition.
@@ -1313,13 +1323,13 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 	}
 
   /**
-   * Setup a rotate camera transition object which rotate the 
-   * camera by the specified the angle in the specified 
+   * Setup a rotate camera transition object which rotate the
+   * camera by the specified the angle in the specified
    * duration. This will not work if {@link cameraTransition}
    * is active.
    * To use this object, the transition must be enabled using
    * {@link enableCameraTransition}.
-   * 
+   *
    * @param {THREE.Vector3} axis - the starting viewport
    * @param {Number} angle - the viewport ti end the transistion with.
    * @param {Number} duration - duration of the smooth transition.
@@ -1366,13 +1376,13 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 		return (currentMode === MODE.SMOOTH_CAMERA_TRANSITION ||
 		    currentMode === MODE.ROTATE_CAMERA_TRANSITION);
 	}
-  
+
   /**
    * Setup auto tumble object of the camera which will rotate the camera
    * around the target as if the user is rotating the camera by mouse/touch
    * interaction.
-   * The tumbling will only be enabled with {@link enabelAutoTumble}. 
-   * 
+   * The tumbling will only be enabled with {@link enabelAutoTumble}.
+   *
    * @param {Array} tumbleDirectionIn - direction of the mouse/touch.
    * @param {Number} tumbleRateIn - Speed of the tumbling.
    * @param {Boolean} stopOnCameraInputIn - Disable the tumbling once the user
@@ -1407,16 +1417,16 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Check rather autotumble is active.
-   * 
+   *
    * @return {Boolean}
    */
 	this.isAutoTumble = () => {
 		return (currentMode === MODE.AUTO_TUMBLE);
 	}
-	
+
   /**
    * Create an internal raycaster object and enable it for picking.
-   * 
+   *
    * @param {Scene} sceneIn - The scene to pick from, it can be different from the
    * camera's scene.
    * @param {requestCallback} callbackFunctionIn - The callback for pick event.
@@ -1438,7 +1448,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
 
   /**
    * Check rather the camera is in syncControl mode.
-   * 
+   *
    * @return {Boolean}
    */
   this.isSyncControl = () => {
@@ -1465,7 +1475,7 @@ const CameraControls = function ( object, domElement, renderer, scene ) {
     this.cameraObject.zoom = 1;
     this.cameraObject.updateProjectionMatrix();
   }
-	
+
 	this.enable();
 
 };
@@ -1487,18 +1497,18 @@ const SmoothCameraTransition = function(startingViewport, endingViewport, target
 	targetCamera.far = Math.max(startingViewport.farPlane, endingViewport.farPlane);
 	targetCamera.cameraObject.up.set( endingViewport.upVector[0],  endingViewport.upVector[1],
       endingViewport.upVector[2]);
-      
+
   this.setDuration = newDuration => {
     duration = newDuration;
   }
-	
+
 	const updateTime = delta => {
 		let targetTime = inbuildTime + delta;
 		if (targetTime > duration)
 			targetTime = duration;
 		inbuildTime = targetTime;
 	};
-	
+
 	const updateCameraSettings = () => {
 		const ratio = inbuildTime / duration;
 		const eyePosition = [startingEyePosition[0] * (1.0 - ratio) + endingEyePosition[0] * ratio,
@@ -1513,25 +1523,25 @@ const SmoothCameraTransition = function(startingViewport, endingViewport, target
 		targetCamera.cameraObject.position.set( eyePosition[0], eyePosition[1], eyePosition[2]);
 		targetCamera.cameraObject.target.set( targetPosition[0], targetPosition[1], targetPosition[2]  );
 	};
-	
+
 	this.update = delta => {
 
 		if ( this.enabled === false ) return;
-		
+
 		updateTime(delta);
-		
+
 		updateCameraSettings();
-		
+
 		if (inbuildTime == duration) {
 			completed = true;
 		}
 
 	}
-	
+
 	this.isTransitionCompleted = () => {
 		return completed;
 	}
-	
+
 };
 
 const RotateCameraTransition = function(axisIn, angleIn, targetCameraIn, durationIn) {
@@ -1559,19 +1569,19 @@ const RotateCameraTransition = function(axisIn, angleIn, targetCameraIn, duratio
     const alpha = ratio * angle;
     targetCamera.rotateAboutLookAtpoint(axis, alpha);
   };
-  
+
   this.update = delta => {
 
     if ( this.enabled === false ) return;
-    
+
     updateCameraSettings(delta);
-    
+
     if (inbuildTime == duration) {
       completed = true;
     }
 
   }
-  
+
   this.isTransitionCompleted = () => {
     return completed;
   }
@@ -1610,7 +1620,7 @@ const RayCaster = function (sceneIn, hostSceneIn, callbackFunctionIn, hoverCallb
       renderer.render(threejsScene, zincCamera.cameraObject);
     }
     let objects = pickableObjects ? pickableObjects : scene.getPickableThreeJSObjects();
-    //Reset pickedObjects array 
+    //Reset pickedObjects array
     pickedObjects.length = 0;
 		return raycaster.intersectObjects( objects, true, pickedObjects );
 	}
@@ -1638,8 +1648,8 @@ const RayCaster = function (sceneIn, hostSceneIn, callbackFunctionIn, hoverCallb
 		raycaster.setFromCamera(mouse, zincCamera.cameraObject);
 		return this.getIntersectsObject(zincCamera);
 	};
-	
-	this.pick = (zincCamera, x, y) => { 
+
+	this.pick = (zincCamera, x, y) => {
 		if (enabled && renderer && scene && zincCamera && callbackFunction) {
 			this.getIntersectsObjectWithCamera(zincCamera, x, y);
 			const length = pickedObjects.length;
@@ -1656,7 +1666,7 @@ const RayCaster = function (sceneIn, hostSceneIn, callbackFunctionIn, hoverCallb
 			callbackFunction(pickedObjects, x, y);
 		}
   }
-  
+
   let hovered = (zincCamera, x, y) => {
     if (enabled && renderer && scene && zincCamera && hoverCallbackFunction) {
       this.getIntersectsObjectWithCamera(zincCamera, x, y);
@@ -1672,7 +1682,7 @@ const RayCaster = function (sceneIn, hostSceneIn, callbackFunctionIn, hoverCallb
       hoverCallbackFunction(pickedObjects, x, y);
     }
   }
-	
+
 	this.move = (zincCamera, x, y) => {
     if (enabled && renderer && scene && zincCamera && hoverCallbackFunction) {
       if (scene.displayMarkers) {
@@ -1693,7 +1703,7 @@ const RayCaster = function (sceneIn, hostSceneIn, callbackFunctionIn, hoverCallb
       }
     }
   }
-  
+
   let awaitMove = (lastPosition) => {
     return function() {
       awaiting = false;
@@ -1713,7 +1723,7 @@ const CameraAutoTumble = function (tumbleDirectionIn, tumbleRateIn, stopOnCamera
   this.requireUpdate = true;
   const b = new THREE.Vector3();
   const c = new THREE.Vector3();
-	
+
 	const computeTumbleAxisAngle = tumbleDirection => {
 		const tangent_dist = Math.sqrt(tumbleDirection[0]*tumbleDirection[0] +
 			tumbleDirection[1]*tumbleDirection[1]);
@@ -1723,7 +1733,7 @@ const CameraAutoTumble = function (tumbleDirectionIn, tumbleRateIn, stopOnCamera
 		const dx = -tumbleDirection[1]/tangent_dist;
 		const dy = tumbleDirection[0]/tangent_dist;
 		let d = dx*(tumbleDirection[0])+dy*(-tumbleDirection[1]);
-		
+
 		if (d > radius)
 		{
 			d = radius;
@@ -1735,7 +1745,7 @@ const CameraAutoTumble = function (tumbleDirectionIn, tumbleRateIn, stopOnCamera
 				d = -radius;
 			}
 		}
-		
+
 		const phi=Math.acos(d/radius)-0.5*Math.PI;
 		/* get axis to rotate about */
 		tumbleAxis.copy(targetCamera.cameraObject.position).sub(
@@ -1746,11 +1756,11 @@ const CameraAutoTumble = function (tumbleDirectionIn, tumbleRateIn, stopOnCamera
     b.add(c).multiplyScalar(Math.cos(phi));
     tumbleAxis.multiplyScalar(Math.sin(phi)).add(b);
 	};
-		
+
 	this.update = delta => {
 
 		if ( this.enabled === false ) return;
-		
+
 		if (this.requireUpdate) {
 			computeTumbleAxisAngle(tumbleDirection);
 			this.requireUpdate = false;
@@ -1758,7 +1768,7 @@ const CameraAutoTumble = function (tumbleDirectionIn, tumbleRateIn, stopOnCamera
 		targetCamera.rotateAboutLookAtpoint(tumbleAxis, angle * delta/1000);
 
 	}
-	
+
 };
 
 /**
@@ -1906,7 +1916,7 @@ const ModifiedDeviceOrientationControls = function ( object ) {
 
 	const scope = this;
 
-	this.object = object; 
+	this.object = object;
 	this.object.rotation.reorder( "YXZ" );
 
 	this.enabled = true;
@@ -1939,25 +1949,25 @@ const ModifiedDeviceOrientationControls = function ( object ) {
 		const q1 = new THREE.Quaternion( - Math.sqrt( 0.5 ), 0, 0, Math.sqrt( 0.5 ) ); // - PI/2 around the x-axis
 
 		return (cameraObject, alpha, beta, gamma, orient) => {
-			
+
 			const vector = new THREE.Vector3(0, 0, 1);
-			
+
 			vector.subVectors(cameraObject.target, cameraObject.position);
 
 			euler.set( beta, alpha, - gamma, 'YXZ' );                       // 'ZXY' for the device, but 'YXZ' for us
 
 			const quaternion = new THREE.Quaternion();
-			
+
 			quaternion.setFromEuler( euler );                               // orient the device
 
 			quaternion.multiply( q1 );                                      // camera looks out the back of the device, not the top
 
 			quaternion.multiply( q0.setFromAxisAngle( zee, - orient ) );    // adjust for screen orientation
-			
+
 			vector.applyQuaternion(quaternion);
-				
+
 			vector.addVectors(cameraObject.position, vector);
-			
+
 			cameraObject.lookAt(vector);
 
 		};
@@ -2018,6 +2028,7 @@ const NDCCameraControl = function () {
   let eventCallback = undefined;
 
   this.setCurrentCameraSettings = (cameraIn, defaultViewportIn)  => {
+    this.near_plane_fly_debt == 0.0;
     camera = cameraIn.clone();
     targetCamera = cameraIn;
     defaultViewport = defaultViewportIn;
@@ -2039,7 +2050,7 @@ const NDCCameraControl = function () {
     position.copy(camera.position).project(camera);
     target.copy(camera.target).project(camera);
   }
-	
+
   this.getCurrentPosition = () => {
     target.copy(targetCamera.target).project(camera);
     return [target.x, target.y];
@@ -2057,7 +2068,7 @@ const NDCCameraControl = function () {
     v1.project(camera);
     this.setCenterZoom([v1.x, v1.y], zoom);
   }
-	  
+
   //return top left and size
   this.getPanZoom = () => {
     return {target: this.getCurrentPosition(), zoom: targetCamera.zoom };
