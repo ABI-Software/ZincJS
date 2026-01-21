@@ -72,6 +72,18 @@ exports.Label = function (textIn, colour) {
       sprite.scale.set(scaling, scaling, 1.0);
   }
 
+    /**
+     * Set a new text for the label.
+     *
+     * @param {Number} scaling - Scale to be set.
+     */
+    this.setText = textIn => {
+      if (textIn && textIn !== sprite.text) {
+        sprite.text = textIn;
+        text = textIn;
+      }
+    }
+
   /**
    * Free up the memory
    */

@@ -193,6 +193,21 @@ const Pointset = function () {
   }
 
   /**
+   * Set the name for this ZincObject.
+   *
+   * @param {String} groupNameIn - Name to be set.
+   */
+  this.setName = function(groupNameIn) {
+    const oldName = this.groupName;
+    Pointset.prototype.setName.call(this, groupNameIn);
+    labelSets.forEach(label => {
+      if (label.getString() === oldName) {
+        label?.setText(groupNameIn);
+      }
+    })
+  }
+
+  /**
  * Turn size attenuation on/off based on the flag.
  *
  * @param {Boolean} flag - Determin either size attenuation

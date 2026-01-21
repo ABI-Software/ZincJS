@@ -4,8 +4,8 @@ const SpriteText = require('three-spritetext').default;
 
 function resolveURL(url) {
 	let actualURL = url;
-	const prefix = (require("./zinc").modelPrefix);
-	
+	let prefix = (require("./zinc").modelPrefix);
+
 	if (prefix) {
 		if (prefix[prefix.length -1] != '/')
 			prefix = prefix + '/';
@@ -14,7 +14,7 @@ function resolveURL(url) {
 			actualURL =  prefix + url;
 		}
 	}
-	
+
 	return actualURL;
 }
 
@@ -49,7 +49,7 @@ function createNewURL(target, reference) {
 /*
  * Calculate the bounding box of a mesh, values will be
  * set for cachedBox, b1, v1 and v2 and they need to be
- * defined. 
+ * defined.
  */
 function getBoundingBox(mesh, cachedBox, b1, v1, v2) {
   let influences = mesh.morphTargetInfluences;
@@ -100,7 +100,7 @@ function loadExternalFile(url, data, callback, errorCallback) {
         }
     };
 
-    request.send(null);    
+    request.send(null);
 }
 
 function loadExternalFiles(urls, callback, errorCallback) {
@@ -176,7 +176,7 @@ exports.updateMorphColorAttribute = function(targetGeometry, morph) {
 exports.toBufferGeometry = (geometryIn, options) => {
   let geometry = undefined;
   if (geometryIn instanceof THREEGeometry) {
-    if (options.localTimeEnabled && !geometryIn.morphNormalsReady && 
+    if (options.localTimeEnabled && !geometryIn.morphNormalsReady &&
       (geometryIn.morphNormals == undefined || geometryIn.morphNormals.length == 0))
       geometryIn.computeMorphNormals();
     geometry = geometryIn.toIndexedBufferGeometry();
@@ -215,7 +215,7 @@ exports.copyMorphColorsToBufferGeometry = (geometry, bufferGeometry) => {
       attribute.name = morphColor.name;
       array.push( attribute.copyArray( colorArray ) );
     }
-    bufferGeometry.morphAttributes[ "color" ] = array; 
+    bufferGeometry.morphAttributes[ "color" ] = array;
   }
 }
 
@@ -236,7 +236,7 @@ const copyMorphColorsToIndexedBufferGeometry = (geometry, bufferGeometry) => {
       attribute.name = morphColor.name;
       array.push( attribute );
     }
-    bufferGeometry.morphAttributes[ "color" ] = array; 
+    bufferGeometry.morphAttributes[ "color" ] = array;
   }
 }
 
