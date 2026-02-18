@@ -11,19 +11,24 @@ const SpriteText = require('three-spritetext').default;
  * @author Alan Wu
  * @return {Label}
  */
-exports.Label = function (textIn, colour) {
+exports.Label = function (textIn, colourIn) {
   let text = textIn;
   let sprite = undefined;
-  if (colour)
-    sprite = new SpriteText(text, 0.015, colour.getStyle());
+  const position = [0, 0, 0];
+  let colour = colourIn;
+  let size = 1.0;
+  let fontWeight = 500;
+  if (colourIn)
+    sprite = new SpriteText(text, 0.015, colourIn.getStyle());
   else
     sprite = new SpriteText(text, 0.015);
   sprite.fontFace = "Asap";
-  sprite.fontWeight = 700;
+  sprite.fontWeight = fontWeight;
   sprite.material.map.generateMipmaps = false;
   sprite.material.sizeAttenuation = false;
   sprite.center.x = -0.05;
   sprite.center.y = 0;
+  const originalScale = [sprite.scale.x, sprite.scale.y];
 
   /**
    * Get the current position in an array containing the x, y and z
@@ -45,6 +50,10 @@ exports.Label = function (textIn, colour) {
    * @param {Number} z - z coordinate to be set.
    */
   this.setPosition = (x, y, z) => {
+    position[0] = x;
+    position[1] = y;
+    position[2] = z;
+
     if (sprite) {
       sprite.position.set(x, y, z);
     }
@@ -55,10 +64,10 @@ exports.Label = function (textIn, colour) {
    *
    * @param {THREE.Color} colour - colour to be set
    */
-  this.setColour = colour => {
-    console.log(sprite)
-    if (colour) {
-      sprite.color = colour.getStyle();
+  this.setColour = colourIn => {
+    if (colourIn) {
+      sprite.color = colourIn.getStyle();
+      colour = colourIn;
     }
   }
 
@@ -72,17 +81,53 @@ exports.Label = function (textIn, colour) {
       sprite.scale.set(scaling, scaling, 1.0);
   }
 
-    /**
-     * Set a new text for the label.
-     *
-     * @param {Number} scaling - Scale to be set.
-     */
-    this.setText = textIn => {
-      if (textIn && textIn !== sprite.text) {
-        sprite.text = textIn;
-        text = textIn;
-      }
+  /**
+   * Set depth test for sprite object.
+   *
+   * @param {Boolean} flag - Enable/disable depth test
+   */
+  this.setDepthTest = flag => {
+    if (flag && flag !== sprite.material.depthTest) {
+      sprite.material.depthTest = flag;
     }
+  }
+
+  /**
+   * Set a new text for the label.
+   *
+   * @param {Number} scaling - Scale to be set.
+   */
+  this.setSize = sizeIn => {
+    if (sizeIn && sizeIn !== size) {
+      sprite.scale.x = originalScale[0] * sizeIn;
+      sprite.scale.y = originalScale[1] * sizeIn;
+      size = sizeIn;
+    }
+  }
+
+  /**
+   * Set a new text for the label.
+   *
+   * @param {Number} scaling - Scale to be set.
+   */
+  this.setFontWeight = fontWeightIn => {
+    if (fontWeightIn && fontWeightIn !== fontWeight) {
+      sprite.fontWeight = fontWeightIn;
+      fontWeight = fontWeightIn;
+    }
+  }
+
+  /**
+   * Set a new text for the label.
+   *
+   * @param {Number} scaling - Scale to be set.
+   */
+  this.setText = textIn => {
+    if (textIn && textIn !== sprite.text) {
+      sprite.text = textIn;
+      text = textIn;
+    }
+  }
 
   /**
    * Free up the memory

@@ -17,6 +17,9 @@ const Pointset = function () {
   (require('./zincObject').ZincObject).call(this);
   this.isPointset = true;
   const labelSets = [];
+  let labelSize = 1.0;
+  let labelDepthTest = false;
+  let fontWeight = 500;
 
   /**
    * Create the pointsets using geometry and material.
@@ -50,7 +53,9 @@ const Pointset = function () {
       sprite.material.alphaTest = 0.5;
       sprite.material.transparent = true;
       sprite.material.depthWrite = false;
-      sprite.material.depthTest = false;
+      sprite.material.depthTest = labelDepthTest;
+      label.setFontWeight(fontWeight);
+      label.setSize(labelSize);
       this.group.add(sprite);
       labelSets[index] = label;
     }
@@ -122,6 +127,50 @@ const Pointset = function () {
     for (let i = 0; i < labelSets.length; i++) {
       if (labelSets[i]) {
         labelSets[i].setColour(this._lod._material.color);
+      }
+    }
+  }
+
+  /**
+   * Turn size attenuation on/off based on the flag.
+   *
+   * @param {Boolean} flag - Determin either size attenuation
+   * should be on or off.
+   */
+  this.setLabelDepthTest = (flag) => {
+    labelDepthTest = flag;
+    for (let i = 0; i < labelSets.length; i++) {
+      if (labelSets[i]) {
+        labelSets[i].setDepthTest(flag);
+      }
+    }
+  }
+
+  /**
+   * Turn size attenuation on/off based on the flag.
+   *
+   * @param {Number} fontWeightIn - Default value is 700
+   */
+  this.setLabelFontWeight = (fontWeightIn) => {
+    fontWeight = fontWeightIn;
+    for (let i = 0; i < labelSets.length; i++) {
+      if (labelSets[i]) {
+        labelSets[i].setFontWeight(fontWeightIn);
+      }
+    }
+  }
+
+  /**
+   * Set the size of the label
+   *
+   * @param {Number} size - Size to set, default
+   * value is 1.
+   */
+  this.setLabelSize = (size) => {
+    labelSize = size;
+    for (let i = 0; i < labelSets.length; i++) {
+      if (labelSets[i]) {
+        labelSets[i].setSize(size);
       }
     }
   }
