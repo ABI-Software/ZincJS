@@ -170,7 +170,7 @@ const Pointset = function () {
     labelSize = size;
     for (let i = 0; i < labelSets.length; i++) {
       if (labelSets[i]) {
-        labelSets[i].setSize(size);
+        labelSets[i].setSize(labelSize);
       }
     }
   }

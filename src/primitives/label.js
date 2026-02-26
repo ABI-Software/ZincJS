@@ -19,9 +19,9 @@ exports.Label = function (textIn, colourIn) {
   let size = 1.0;
   let fontWeight = 500;
   if (colourIn)
-    sprite = new SpriteText(text, 0.015, colourIn.getStyle());
+    sprite = new SpriteText(text, 0.010, colourIn.getStyle());
   else
-    sprite = new SpriteText(text, 0.015);
+    sprite = new SpriteText(text, 0.010);
   sprite.fontFace = "Asap";
   sprite.fontWeight = fontWeight;
   sprite.material.map.generateMipmaps = false;
@@ -98,7 +98,7 @@ exports.Label = function (textIn, colourIn) {
    * @param {Number} scaling - Scale to be set.
    */
   this.setSize = sizeIn => {
-    if (sizeIn && sizeIn !== size) {
+    if (sizeIn > 0.0) {
       sprite.scale.x = originalScale[0] * sizeIn;
       sprite.scale.y = originalScale[1] * sizeIn;
       size = sizeIn;
