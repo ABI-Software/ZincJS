@@ -3,7 +3,7 @@ const THREE = require('three');
 /**
  * Texture array object for holding array of images into
  * texures unit that can be used by other texture primitives.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {TextureArray}
@@ -15,7 +15,7 @@ const TextureArray = function () {
 
   /**
    * Read images from an array containg src locations.
-   * 
+   *
    * @async
    * @param {Array} srcArrays - List of source location of the images.
    */
@@ -61,16 +61,16 @@ const TextureArray = function () {
   /**
    * Get and create the material containing shaders and the textures.
    * The texture must be read and ready before calling this function.
-   * 
+   *
    *
    * @param {Object} options - Customise the material with the options object.
-   * @param {String} options.fs - string of the fragment shader used for 
+   * @param {String} options.fs - string of the fragment shader used for
    * visualisation.
-   * @param {String} options.vs - string of the vertex shader used for 
+   * @param {String} options.vs - string of the vertex shader used for
    * visualisation.
    * @param {Object} options.uniforms - Containing the data to be passed into the shaders.
    * @param {String} options.glslVersion - Version of glsl used for compile this shader.
-   * 
+   *
    */
   this.getMaterial = (options) => {
     if (this.impl) {

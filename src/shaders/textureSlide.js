@@ -10,6 +10,8 @@ precision highp sampler2DArray;
 
 uniform sampler2DArray diffuse;
 uniform bool discardAlpha;
+uniform float brightness;
+uniform float contrast;
 in vec3 vUw;
 
 out vec4 outColor;
@@ -18,15 +20,17 @@ void main() {
 
   vec4 color = texture( diffuse, vUw );
 
-  // lighten a bit
+  // discard if alpha is zero
   if (discardAlpha && color.a == 0.0) discard;
-
-  outColor = vec4( color.rgba );
-
+  // Apply brightness
+  vec3 brightenedColor = color.rgb + vec3(brightness);
+  // Apply contrast
+  vec3 contrastedColor = (brightenedColor - vec3(0.5)) * contrast + vec3(0.5);
+  outColor = vec4(contrastedColor, color.a);
 }
 `;
 
-const vs = 
+const vs =
 `
 out vec3 vUw;
 uniform float depth;
@@ -46,7 +50,7 @@ void main() {
   if (direction == 3)
     slidePos = vec3(position.x, position.y, slide.z);
 
-  if (flipY) 
+  if (flipY)
     slidePos.y = 1.0 - slidePos.y;
 
   vUw.xyz = vec3(slidePos.x, slidePos.y, slidePos.z * depth);
@@ -56,12 +60,14 @@ void main() {
 
 const getUniforms = function() {
   return {
-    diffuse: { value: undefined },
+    brightness: { value: 0},
+    contrast: { value: 1},
     depth: { value: 1 },
-    slide: { value: new THREE.Vector3( 0, 0, 1 ) },
+    discardAlpha: {value: true},
+    diffuse: { value: undefined },
     direction: {value: 1},
     flipY: { value: true},
-    discardAlpha: {value: true},
+    slide: { value: new THREE.Vector3( 0, 0, 1 ) },
   };
 }
 

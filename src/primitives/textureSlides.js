@@ -21,6 +21,8 @@ const TextureSlides = function (textureIn) {
   this.morph.userData = this;
   let edgesLine = undefined;
   let flipY = true;
+  let brightness = 0.0;
+  let contrast = 1.0;
 
   /**
     @typedef SLIDE_SETTINGS
@@ -111,6 +113,8 @@ const TextureSlides = function (textureIn) {
         const geometry = new THREE.PlaneGeometry(1, 1);
         geometry.translate(0.5, 0.5, 0);
         const uniforms = shader.getUniforms();
+        uniforms.brightness.value = brightness;
+        uniforms.contrast.value = contrast;
         uniforms.diffuse.value = this.texture.impl;
         uniforms.depth.value = this.texture.size.depth;
         uniforms.flipY.value = flipY;
@@ -339,6 +343,40 @@ const TextureSlides = function (textureIn) {
       edgesLine.material.color = color;
     }
     edgesLine.visible = true;
+  }
+
+  this.getBrightness = () => {
+    return brightness;
+  }
+
+  this.setBrightness = (brightnessIn) => {
+    brightness = brightnessIn;
+    this.morph.children.forEach((mesh) => {
+      const material = mesh.material;
+      if (material.type === "ShaderMaterial") {
+        const uniforms = material.uniforms;
+        uniforms.brightness.value = brightness;
+        material.needsUpdate = true;
+      }
+    });
+  }
+
+  this.getContrast = () => {
+    return contrast;
+  }
+
+  this.setContrast = (contrastIn) => {
+    if (contrast >= 0 ) {
+      contrast = contrastIn;
+      this.morph.children.forEach((mesh) => {
+        const material = mesh.material;
+        if (material.type === "ShaderMaterial") {
+          const uniforms = material.uniforms;
+          uniforms.contrast.value = contrast;
+          material.needsUpdate = true;
+        }
+      });
+    }
   }
 
   this.hideEdges = () => {
