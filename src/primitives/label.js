@@ -19,9 +19,9 @@ exports.Label = function (textIn, colourIn) {
   let size = 1.0;
   let fontWeight = 500;
   if (colourIn)
-    sprite = new SpriteText(text, 0.010, colourIn.getStyle());
+    sprite = new SpriteText(text, 0.012, colourIn.getStyle());
   else
-    sprite = new SpriteText(text, 0.010);
+    sprite = new SpriteText(text, 0.012);
   sprite.fontFace = "Asap";
   sprite.fontWeight = fontWeight;
   sprite.material.map.generateMipmaps = false;
