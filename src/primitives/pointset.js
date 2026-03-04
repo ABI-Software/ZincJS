@@ -20,6 +20,7 @@ const Pointset = function () {
   let labelSize = 1.0;
   let labelDepthTest = false;
   let fontWeight = 500;
+  let labelVisibility = true;
 
   /**
    * Create the pointsets using geometry and material.
@@ -56,6 +57,7 @@ const Pointset = function () {
       sprite.material.depthTest = labelDepthTest;
       label.setFontWeight(fontWeight);
       label.setSize(labelSize);
+      label.setVisibility(labelVisibility);
       this.group.add(sprite);
       labelSets[index] = label;
     }
@@ -176,6 +178,19 @@ const Pointset = function () {
   }
 
   /**
+   * Set visibility of Labels
+   *
+   * @param {boolean} flag - default value is true
+   */
+    this.displayLabels = (flag) => {
+      labelVisibility = flag;
+      for (let i = 0; i < labelSets.length; i++) {
+        if (labelSets[i]) {
+          labelSets[i].setVisibility(labelVisibility);
+        }
+      }
+    }
+  /**
    * Set the size of the points.
    *
    * @param {Number} size - size to be set.
@@ -255,6 +270,7 @@ const Pointset = function () {
       }
     })
   }
+
 
   /**
  * Turn size attenuation on/off based on the flag.

@@ -130,6 +130,15 @@ exports.Label = function (textIn, colourIn) {
   }
 
   /**
+   * Set visibility of the label.
+   *
+   * @param {Boolean} flag - Visibility to set
+   */
+  this.setVisibility = flag => {
+    sprite.visible = flag;
+  }
+
+  /**
    * Free up the memory
    */
   this.dispose = () => {
