@@ -23,6 +23,7 @@ const TextureSlides = function (textureIn) {
   let flipY = true;
   let brightness = 0.0;
   let contrast = 1.0;
+  let discardAlpha = true;
 
   /**
     @typedef SLIDE_SETTINGS
@@ -116,6 +117,7 @@ const TextureSlides = function (textureIn) {
         uniforms.brightness.value = brightness;
         uniforms.contrast.value = contrast;
         uniforms.diffuse.value = this.texture.impl;
+        uniforms.discardAlpha.value = discardAlpha;
         uniforms.depth.value = this.texture.size.depth;
         uniforms.flipY.value = flipY;
 
@@ -343,6 +345,22 @@ const TextureSlides = function (textureIn) {
       edgesLine.material.color = color;
     }
     edgesLine.visible = true;
+  }
+
+  this.isAlphaPixelDiscarded = () => {
+    return discardAlpha;
+  }
+
+  this.discardAlphaPixel = (flag) => {
+    discardAlpha = flag;
+    this.morph.children.forEach((mesh) => {
+      const material = mesh.material;
+      if (material.type === "ShaderMaterial") {
+        const uniforms = material.uniforms;
+        uniforms.discardAlpha.value = discardAlpha;
+        material.needsUpdate = true;
+      }
+    });
   }
 
   this.getBrightness = () => {
