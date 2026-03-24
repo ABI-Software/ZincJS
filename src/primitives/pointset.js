@@ -251,6 +251,8 @@ const Pointset = function () {
 
         });
         positionAttribute.needsUpdate = true;
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.computeBoundingSphere();
         this.boundingBoxUpdateRequired = true;
       }
     }

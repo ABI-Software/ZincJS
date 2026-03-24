@@ -136,6 +136,8 @@ const Lines2 = function () {
         }
         mesh.geometry.setPositions(positions);
         mesh.computeLineDistances();
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.computeBoundingSphere();
         this.boundingBoxUpdateRequired = true;
       }
     }
