@@ -1,5 +1,6 @@
 const THREE = require('three');
 const createBufferGeometry = require('../utilities').createBufferGeometry;
+const removeVertexAtIndex = require('../utilities').removeVertexAtIndex;
 const resolveURL = require('../utilities').resolveURL;
 
 let uniqueiId = 0;
@@ -756,6 +757,24 @@ ZincObject.prototype.addVertices = function(coords) {
     }
   }
   return geometry;
+}
+
+/**
+ * Add lod from an url into the lod object.
+ */
+ZincObject.prototype.deleteVertices = function(index) {
+  let mesh = this.getMorph();
+  if (mesh?.geometry && this.drawRange >= index) {
+    if (removeVertexAtIndex(mesh.geometry, index, true)) {
+      --this.drawRange;
+      mesh.geometry.setDrawRange(0, this.drawRange);
+      mesh.geometry.computeBoundingBox();
+      mesh.geometry.computeBoundingSphere();
+      this.boundingBoxUpdateRequired = true;
+      return true;
+    }
+  }
+  return false;
 }
 
 /**

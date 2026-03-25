@@ -800,6 +800,50 @@ function isRegionGroup(regionPath, groupName, comparePath) {
   return false;
 }
 
+function removeVertexAtIndex(geometry, index, maintainLength) {
+  const positionAttribute = geometry.getAttribute('position');
+  const normalAttribute = geometry.getAttribute('normal'); // Also update other attributes
+
+  if (!positionAttribute) return;
+
+  const itemSize = positionAttribute.itemSize; // e.g., 3 for x, y, z
+  const start = index * itemSize;
+  const deleteCount = itemSize;
+  let removed = false;
+
+  // Helper to remove elements from a typed array
+  const removeElements = (attribute, name) => {
+    let removed = false;
+    const array = Array.from(attribute.array);
+    if (array.length >= (start + deleteCount)) {
+      array.splice(start, deleteCount); // Use splice for removal
+      if (maintainLength) {
+        array.concat(new Array(deleteCount).fill(0));
+      }
+      removed = true;
+      const newArray = new Float32Array(array);
+      geometry.setAttribute(name, new THREE.BufferAttribute(newArray, itemSize));
+      geometry.getAttribute(name).needsUpdate = true;
+    }
+    // Create new BufferAttribute with the modified array
+
+    return removed;
+  };
+
+  removed = removeElements(positionAttribute, 'position');
+  if (normalAttribute) removeElements(normalAttribute, 'normal');
+  // Repeat for 'uv', 'color', etc.
+
+  // If the geometry is indexed, the index buffer will also need adjustment
+  if (geometry.index !== null) {
+      // This is more complex, typically easier to work with non-indexed geometry when modifying vertices
+      console.warn("Removing vertices from indexed geometry requires index buffer recalculation.");
+  }
+
+  return removed;
+
+}
+
 exports.getBoundingBox = getBoundingBox;
 exports.createNewURL = createNewURL;
 exports.createBufferGeometry = createBufferGeometry;
@@ -810,3 +854,4 @@ exports.loadExternalFiles = loadExternalFiles;
 exports.PhongToToon = PhongToToon;
 exports.createNewSpriteText = createNewSpriteText;
 exports.isRegionGroup = isRegionGroup;
+exports.removeVertexAtIndex = removeVertexAtIndex;

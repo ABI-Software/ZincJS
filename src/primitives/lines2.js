@@ -81,6 +81,8 @@ const Lines2 = function () {
       if (mesh) {
         mesh.geometry.setPositions(positions);
         mesh.computeLineDistances();
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.computeBoundingSphere();
         this.boundingBoxUpdateRequired = true;
       }
     }

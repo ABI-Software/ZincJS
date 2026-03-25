@@ -49,7 +49,7 @@ const Pointset = function () {
       const colour = new THREE.Color(colourHex);
       const label = new Label(labelText, colour);
       label.setPosition(coord[0], coord[1], coord[2]);
-      const sprite  = label.getSprite();
+      const sprite = label.getSprite();
       sprite.material.sizeAttenuation = false;
       sprite.material.alphaTest = 0.5;
       sprite.material.transparent = true;
@@ -60,6 +60,16 @@ const Pointset = function () {
       label.setVisibility(labelVisibility);
       this.group.add(sprite);
       labelSets[index] = label;
+    }
+  }
+
+  const removeLabel = (index) => {
+    const label = labelSets[index];
+    if (label) {
+      const sprite = label.getSprite();
+      this.group.remove(sprite);
+      label.dispose();
+      labelSets.splice(index, 1);
     }
   }
 
@@ -257,6 +267,17 @@ const Pointset = function () {
       }
     }
   }
+
+    /**
+   * Delete a vertex in index.
+   */
+    this.deleteVertices = function(index) {
+      let removed = Pointset.prototype.deleteVertices.call(this, index);
+      if (removed) {
+        removeLabel(index);
+      }
+      return this.drawRange;
+    }
 
   /**
    * Set the name for this ZincObject.
