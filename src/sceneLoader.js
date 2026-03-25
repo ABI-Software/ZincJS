@@ -286,7 +286,15 @@ exports.SceneLoader = function (sceneIn) {
   const onLoadGlyphsetReady = (region, xmlhttp, glyphurl, groupName, finishCallback, options) => {
     return () => {
       if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        const glyphsetData = JSON.parse(xmlhttp.responseText);
+        let glyphsetData = JSON.parse(xmlhttp.responseText);
+        if (Array.isArray(glyphsetData)) {
+          const index = options?.loaderOptions?.index;
+          if (index !== undefined) {
+            if (glyphsetData.length > index) {
+              glyphsetData = glyphsetData[index];
+            }
+          }
+        }
         loadGlyphset(region, glyphsetData, glyphurl, groupName, finishCallback, options);
       }
     };
