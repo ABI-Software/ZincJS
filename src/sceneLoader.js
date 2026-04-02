@@ -263,7 +263,6 @@ exports.SceneLoader = function (sceneIn) {
       if (typeof glyphsetData === 'string' || glyphsetData instanceof String) {
         glyphsetData = JSON.parse(data);
       }
-      console.log("glyphsetData", glyphsetData)
       let isInline  = (options && options.isInline) ? options.isInline : undefined;
       let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
       let displayLabels = (options && options.displayLabels) ? options.displayLabels : undefined;
