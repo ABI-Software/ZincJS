@@ -257,29 +257,36 @@ exports.SceneLoader = function (sceneIn) {
     }
   }
 
-  const loadGlyphset = (region, glyphsetData, glyphurl, groupName, finishCallback, options) => {
-    let isInline  = (options && options.isInline) ? options.isInline : undefined;
-    let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
-    let displayLabels = (options && options.displayLabels) ? options.displayLabels : undefined;
-    let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
-    const newGlyphset = new (require('./primitives/glyphset').Glyphset)();
-    newGlyphset.setDuration(scene.getDuration());
-    newGlyphset.groupName = groupName;
-    let myCallback = () => {
-      --this.toBeDownloaded;
-      if (finishCallback != undefined && (typeof finishCallback == 'function'))
-        finishCallback(newGlyphset);
+  const glyphsetloader = (region, glyphurl, groupName, finishCallback, options) => {
+    return (data) => {
+      let glyphsetData = data;
+      if (typeof glyphsetData === 'string' || glyphsetData instanceof String) {
+        glyphsetData = JSON.parse(data);
+      }
+      console.log("glyphsetData", glyphsetData)
+      let isInline  = (options && options.isInline) ? options.isInline : undefined;
+      let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
+      let displayLabels = (options && options.displayLabels) ? options.displayLabels : undefined;
+      let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+      const newGlyphset = new (require('./primitives/glyphset').Glyphset)();
+      newGlyphset.setDuration(scene.getDuration());
+      newGlyphset.groupName = groupName;
+      let myCallback = () => {
+        --this.toBeDownloaded;
+        if (finishCallback != undefined && (typeof finishCallback == 'function'))
+          finishCallback(newGlyphset);
+      }
+      ++this.toBeDownloaded;
+      if (isInline) {
+        newGlyphset.load(glyphsetData, glyphurl, myCallback, isInline, displayLabels);
+      }
+      else {
+        newGlyphset.load(glyphsetData, resolveURL(glyphurl), myCallback, isInline, displayLabels);
+      }
+      newGlyphset.setAnatomicalId(anatomicalId);
+      newGlyphset.setRenderOrder(renderOrder);
+      region.addZincObject(newGlyphset);
     }
-    ++this.toBeDownloaded;
-    if (isInline) {
-      newGlyphset.load(glyphsetData, glyphurl, myCallback, isInline, displayLabels);
-    }
-    else {
-      newGlyphset.load(glyphsetData, resolveURL(glyphurl), myCallback, isInline, displayLabels);
-    }
-    newGlyphset.setAnatomicalId(anatomicalId);
-    newGlyphset.setRenderOrder(renderOrder);
-    region.addZincObject(newGlyphset);
   };
 
   //Load a glyphset into this scene.
@@ -295,10 +302,39 @@ exports.SceneLoader = function (sceneIn) {
             }
           }
         }
-        loadGlyphset(region, glyphsetData, glyphurl, groupName, finishCallback, options);
+        (glyphsetloader(region, glyphurl, groupName, finishCallback, options))(glyphsetData);
       }
     };
   };
+
+  /**
+   * Load a glyphset into this scene object.
+   *
+   * @param {String} metaurl - Provide informations such as transformations, colours
+   * and others for each of the glyph in the glyphsset.
+   * @param {String} glyphurl - regular json model file providing geometry of the glyph.
+   * @param {String} groupName - name to assign the glyphset's groupname to.
+   * @param {Function} finishCallback - Callback function which will be called
+   * once the glyphset is succssfully load in.
+   */
+  this.loadGlyphsetURL = (region, metaurl, glyphurl, groupName, finishCallback, options) => {
+    const isInline = (options && options.isInline) ? options.isInline : false;
+    if (isInline) {
+      (glyphsetloader(region, glyphurl, groupName, finishCallback, options))(metaurl);
+    } else {
+      primitivesLoader.load(metaurl, glyphsetloader(region, glyphurl, groupName,
+        finishCallback, options), this.onProgress(metaurl),
+        this.onError(finishCallback), options.loaderOptions);
+
+      /*
+      const xmlhttp = new XMLHttpRequest();
+
+      xmlhttp.onreadystatechange = onLoadGlyphsetReady(region, xmlhttp, glyphurl,
+        groupName, finishCallback, options);
+      xmlhttp.open("GET", resolveURL(metaurl), true);
+      xmlhttp.send();*/
+    }
+  }
 
   //Internal loader for zinc pointset.
   const pointsetloader = (region, localTimeEnabled, localMorphColour, groupName, anatomicalId, renderOrder, finishCallback) => {
@@ -540,29 +576,6 @@ exports.SceneLoader = function (sceneIn) {
     }
   }
 
-  /**
-   * Load a glyphset into this scene object.
-   *
-   * @param {String} metaurl - Provide informations such as transformations, colours
-   * and others for each of the glyph in the glyphsset.
-   * @param {String} glyphurl - regular json model file providing geometry of the glyph.
-   * @param {String} groupName - name to assign the glyphset's groupname to.
-   * @param {Function} finishCallback - Callback function which will be called
-   * once the glyphset is succssfully load in.
-   */
-  this.loadGlyphsetURL = (region, metaurl, glyphurl, groupName, finishCallback, options) => {
-    const isInline = (options && options.isInline) ? options.isInline : false;
-    if (isInline) {
-      loadGlyphset(region, metaurl, glyphurl, groupName, finishCallback, options);
-    } else {
-      const xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = onLoadGlyphsetReady(region, xmlhttp, glyphurl,
-        groupName, finishCallback, options);
-      xmlhttp.open("GET", resolveURL(metaurl), true);
-      xmlhttp.send();
-    }
-  }
-
  /**
    * Add a user provided {THREE.Geometry} into  the scene as zinc geometry.
    *
@@ -733,6 +746,7 @@ exports.SceneLoader = function (sceneIn) {
           if (item.DisplayLabels) {
             options.displayLabels = true;
           }
+          options.loaderOptions.isGlyphsets = true;
           this.loadGlyphsetURL(region, newURL, newGeometryURL, groupName, finishCallback, options);
           break;
         case "Points":

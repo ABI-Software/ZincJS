@@ -2,6 +2,30 @@ const JSONLoader = require('./JSONLoader').JSONLoader;
 const THREE = require('three');
 const FileLoader = THREE.FileLoader;
 
+const mergeGlyphData = (glyphData) => {
+  const merge = (glyphData1, glyphData2) => {
+    glyphData1.metadata.number_of_vertices += glyphData2.metadata.number_of_vertices;
+    if ('labels' in glyphData1) {
+      glyphData1.labels.push(...glyphData1.labels);
+    }
+    const fields = ['axis1', 'axis2', 'axis3', 'colors', 'positions', 'scale'];
+      fields.forEach(field => {
+        if (field in glyphData1) {
+          Object.keys(glyphData1[field]).forEach((step) => {
+            glyphData1[field][step].push(...glyphData2[field][step]);
+          });
+        }
+    });
+  }
+
+  if (glyphData && glyphData.length > 0) {
+    while (glyphData.length > 1) {
+      const glyphData2 = glyphData.splice(1,1);
+      merge(glyphData[0], glyphData2[0]);
+    }
+  }
+}
+
 const mergeGeometries = (geometries) => {
   const merge = (geometry1, geometry2) => {
     geometry1.merge(geometry2);
@@ -18,9 +42,9 @@ const mergeGeometries = (geometries) => {
 }
 
 const IndexedSourcesHandler = function(urlIn, crossOrigin, onDownloadedCallback) {
-  const loader = new FileLoader();
+  const fileLoader = new FileLoader();
   const jsonLoader = new JSONLoader();
-  loader.crossOrigin = crossOrigin;
+  fileLoader.crossOrigin = crossOrigin;
   const url = urlIn;
   const onDownloaded = onDownloadedCallback;
   let data = undefined;
@@ -32,8 +56,12 @@ const IndexedSourcesHandler = function(urlIn, crossOrigin, onDownloadedCallback)
   const processItemDownloaded = (item) => {
     const modelData = data[item.index];
     if (modelData) {
-      let obj = jsonLoader.parse( modelData );
-      item.onLoad(obj.geometry, obj.materials);
+      if ("GlyphGeometriesURL" in modelData) {
+        item.onLoad(modelData);
+      } else {
+        let obj = jsonLoader.parse( modelData );
+        item.onLoad(obj.geometry, obj.materials);
+      }
     } else {
       processItemError(item, {responseURL: url});
     }
@@ -103,7 +131,7 @@ const IndexedSourcesHandler = function(urlIn, crossOrigin, onDownloadedCallback)
     } else {
       items.push(item);
       downloading = true;
-      loader.load(url, onDownloaded, progressHandling, errorHandling);
+      fileLoader.load(url, onDownloaded, progressHandling, errorHandling);
     }
   }
 }
@@ -118,15 +146,24 @@ const MultiSourcesHandler = function(numberIn, onLoadCallback) {
     allData[order]= args;
     totalDownloaded++;
     if (totalDownloaded == number) {
-      const materials = allData[0][1];
-      const geometries = allData.map((data) => data[0]);
-      //All geometries will be merged into the first one
-      const geometry = mergeGeometries(geometries);
-      for (let i = 1; i < number; i++) {
-        allData[order][0].dispose();
-        allData[order][1].forEach((material) => material.dispose());
+      if (allData.length > 0) {
+        //Assume when item length is one then it is a glyphset otherwise geometry
+        if (allData[0].length > 1) {
+          const materials = allData[0][1];
+          const geometries = allData.map((data) => data[0]);
+          //All geometries will be merged into the first one
+          const geometry = mergeGeometries(geometries);
+          for (let i = 1; i < number; i++) {
+            allData[order][0].dispose();
+            allData[order][1].forEach((material) => material.dispose());
+          }
+          onLoad(geometry, materials);
+        } else {
+          const glyphData = allData.map((item) => JSON.parse(item[0]));
+          mergeGlyphData(glyphData);
+          onLoad(glyphData[0]);
+        }
       }
-      onLoad(geometry, materials);
     }
   }
 }
@@ -135,7 +172,9 @@ exports.PrimitivesLoader = function () {
   let concurrentDownloads = 0;
   const MAX_DOWNLOAD = 20;
   this.crossOrigin = "Anonymous";
-  const loader = new JSONLoader();
+  const jsonloader = new JSONLoader();
+  const fileloader = new FileLoader();
+  fileloader.crossOrigin = "Anonymous";
   const waitingList = [];
   //URL to loader pair
   const indexedLoaders = {};
@@ -189,8 +228,12 @@ exports.PrimitivesLoader = function () {
         ++concurrentDownloads;
         const onLoadCallback = new onFinally(onLoad, this, options);
         const onErrorCallback = new onFinally(onError, this, options);
-        loader.crossOrigin = this.crossOrigin;
-        loader.load(url, onLoadCallback, onProgress, onErrorCallback);
+        if (!options.isGlyphsets) {
+          jsonloader.crossOrigin = this.crossOrigin;
+          jsonloader.load(url, onLoadCallback, onProgress, onErrorCallback);
+        } else {
+          fileloader.load(url, onLoadCallback, onProgress, onErrorCallback);
+        }
       } else {
         waitingList.push({
           url,
@@ -254,3 +297,4 @@ exports.PrimitivesLoader = function () {
   }
 
 }
+
