@@ -13,7 +13,7 @@ const getUniqueId = function () {
 }
 
 const defaultMetadata = function() {
-  return { 
+  return {
     Duration: "6 secs",
     OriginalDuration: "-",
     TimeStamps: {}
@@ -23,11 +23,11 @@ const defaultMetadata = function() {
 const defaultDuration = 6000;
 
 /**
- * A Scene contains {@link Region},and 
+ * A Scene contains {@link Region},and
  * {@link CameraControls} which controls the viewport and additional features.
  * It is the main object used for controlling what is and what is not displayed
  * on the renderer.
- * 
+ *
  * @class
  * @param {Object} containerIn - Container to create the renderer on.
  * @author Alan Wu
@@ -35,6 +35,7 @@ const defaultDuration = 6000;
  */
 exports.Scene = function (containerIn, rendererIn) {
   const container = containerIn;
+  let cameraHelper = undefined;
   let videoHandler = undefined;
   let sceneLoader = new SceneLoader(this);
   let minimap = undefined;
@@ -97,7 +98,7 @@ exports.Scene = function (containerIn, rendererIn) {
         return container.width;
     return 0;
   }
-  
+
   const getDrawingHeight = () => {
     if (container)
       if (typeof container.clientHeight !== "undefined")
@@ -111,7 +112,7 @@ exports.Scene = function (containerIn, rendererIn) {
    * This function returns a three component array, which contains
    * [totalsize, totalLoaded and errorDownload] of all the downloads happening
    * in this scene.
-   * @returns {Array} 
+   * @returns {Array}
    */
   this.getDownloadProgress = () => {
     return sceneLoader.getDownloadProgress();
@@ -128,7 +129,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Reset the viewport of this scene to its original state. 
+   * Reset the viewport of this scene to its original state.
    */
   this.resetView = () => {
     this.onWindowResize();
@@ -161,10 +162,10 @@ exports.Scene = function (containerIn, rendererIn) {
   setupCamera();
 
   /**
-   * Load the viewport Data from the argument  {@link Zinc.Viewport} and set it as 
+   * Load the viewport Data from the argument  {@link Zinc.Viewport} and set it as
    * the default viewport of this scene.
-   * 
-   * @param {Zinc.Viewport} viewData - Viewport data to be loaded. 
+   *
+   * @param {Zinc.Viewport} viewData - Viewport data to be loaded.
    */
   this.loadView = settings => {
     const viewPort = new Viewport();
@@ -175,8 +176,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Set up multiple views.
-   * 
-   * @param {Zinc.Viewport} viewData - Viewport data to be loaded. 
+   *
+   * @param {Zinc.Viewport} viewData - Viewport data to be loaded.
    */
   this.setupMultipleViews = (defaultView, entries) => {
     for (const [name, settings] of Object.entries(entries)) {
@@ -189,8 +190,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Get the bounding box of all the object in this scene only.
-   * 
-   * @returns {THREE.Box3} 
+   *
+   * @returns {THREE.Box3}
    */
   this.getBoundingBox = () => {
     return rootRegion.getBoundingBox(true);
@@ -198,7 +199,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Adjust the viewport to display the desired volume provided by the bounding box.
-   * 
+   *
    * @param {THREE.Box3} boundingBox - The bounding box which describes the volume of
    * which we the viewport should be displaying.
    */
@@ -260,9 +261,9 @@ exports.Scene = function (containerIn, rendererIn) {
     rootRegion.forEachLine(callbackFunction, true);
   }
 
-  /** 
+  /**
    * Find and return all geometries in this scene with the matching GroupName.
-   * 
+   *
    * @param {String} GroupName - Groupname to match with.
    * @returns {Array}
    */
@@ -270,18 +271,18 @@ exports.Scene = function (containerIn, rendererIn) {
     return rootRegion.findGeometriesWithGroupName(GroupName, true);
   }
 
-  /** 
+  /**
    * Find and return all pointsets in this scene with the matching GroupName.
-   * 
+   *
    * @param {String} GroupName - Groupname to match with.
    * @returns {Array}
    */
   this.findPointsetsWithGroupName = GroupName => {
     return rootRegion.findPointsetsWithGroupName(GroupName, true);
   }
-  /** 
+  /**
    * Find and return all glyphsets in this scene with the matching GroupName.
-   * 
+   *
    * @param {String} GroupName - Groupname to match with.
    * @returns {Array}
    */
@@ -289,9 +290,9 @@ exports.Scene = function (containerIn, rendererIn) {
     return rootRegion.findGlyphsetsWithGroupName(GroupName, true);
   }
 
-  /** 
+  /**
    * Find and return all lines in this scene with the matching GroupName.
-   * 
+   *
    * @param {String} GroupName - Groupname to match with.
    * @returns {Array}
    */
@@ -299,11 +300,11 @@ exports.Scene = function (containerIn, rendererIn) {
     return rootRegion.findLinesWithGroupName(GroupName, true);
   }
 
-  /** 
+  /**
    * Find a list of objects with the specified name, this will
    * tranverse through the region tree to find all child objects
    * with matching name.
-   * 
+   *
    * @param {String} GroupName - Groupname to match with.
    * @returns {Array}
    */
@@ -315,9 +316,9 @@ exports.Scene = function (containerIn, rendererIn) {
     return rootRegion.findObjectsWithAnatomicalId(anatomicalId, true);
   }
 
-  /** 
+  /**
    * Get the bounding box of all zinc objects in list.
-   * 
+   *
    * @param {Array} objectsArray - Groupname to match with.
    * @returns {THREE.Box3}
    */
@@ -335,9 +336,9 @@ exports.Scene = function (containerIn, rendererIn) {
     return boundingBox;
   }
 
-  /** 
+  /**
    * Convert the vector3 into screen coordinates.
-   * 
+   *
    * @param {THREE.Vector3} point - Vector 3 containing the point to convert,
    * this vector will be overwritten with the returned value.
    * @param {Array} objectsArray - Groupname to match with.
@@ -354,9 +355,9 @@ exports.Scene = function (containerIn, rendererIn) {
     return point;
   }
 
-  /** 
+  /**
    * Get the screen coordinate of the centroid of provided list of objects.
-   * 
+   *
    * @param {Array} zincObjects - List of {@link ZincObject}.
    * @returns {THREE.Vector3}
    */
@@ -370,10 +371,10 @@ exports.Scene = function (containerIn, rendererIn) {
     return undefined;
   }
 
-  /** 
-   * Get the screen coordinate of the centroid of all objects 
+  /**
+   * Get the screen coordinate of the centroid of all objects
    * in scene with the provided name.
-   * 
+   *
    * @param {String} name - List of {@link ZincObject}.
    * @returns {THREE.Vector3}
    */
@@ -382,9 +383,9 @@ exports.Scene = function (containerIn, rendererIn) {
     return this.getObjectsScreenXY(zincObjects);
   };
 
-  /** 
+  /**
    * Add zinc object into the root {@link Region} of sfcene.
-   * 
+   *
    * @param {ZincObject} - zinc object ot be added.
    * @returns {THREE.Vector3}
    */
@@ -398,8 +399,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Load a glyphset into this scene object.
-   * 
-   * @param {String} metaurl - Provide informations such as transformations, colours 
+   *
+   * @param {String} metaurl - Provide informations such as transformations, colours
    * and others for each of the glyph in the glyphsset.
    * @param {String} glyphurl - regular json model file providing geometry of the glyph.
    * @param {String} groupName - name to assign the glyphset's groupname to.
@@ -412,8 +413,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Load a pointset into this scene object.
-   * 
-   * @param {String} metaurl - Provide informations such as transformations, colours 
+   *
+   * @param {String} metaurl - Provide informations such as transformations, colours
    * and others for each of the glyph in the glyphsset.
    * @param {Boolean} timeEnabled - Indicate if  morphing is enabled.
    * @param {Boolean} morphColour - Indicate if color morphing is enabled.
@@ -427,8 +428,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
  * Load lines into this scene object.
- * 
- * @param {String} metaurl - Provide informations such as transformations, colours 
+ *
+ * @param {String} metaurl - Provide informations such as transformations, colours
  * and others for each of the glyph in the glyphsset.
  * @param {Boolean} timeEnabled - Indicate if  morphing is enabled.
  * @param {Boolean} morphColour - Indicate if color morphing is enabled.
@@ -442,8 +443,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
   * Read a STL file into this scene, the geometry will be presented as
-  * {@link Zinc.Geometry}. 
-  * 
+  * {@link Zinc.Geometry}.
+  *
   * @param {STRING} url - location to the STL file.
   * @param {STRING} groupName - name to assign the geometry's groupname to.
   * @param {Function} finishCallback - Callback function which will be called
@@ -455,8 +456,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Read a OBJ file into this scene, the geometry will be presented as
-   * {@link Zinc.Geometry}. 
-   * 
+   * {@link Zinc.Geometry}.
+   *
    * @param {STRING} url - location to the STL file.
    * @param {STRING} groupName - name to assign the geometry's groupname to.
    * @param {Function} finishCallback - Callback function which will be called
@@ -469,7 +470,7 @@ exports.Scene = function (containerIn, rendererIn) {
   /**
    * Load a metadata file from the provided URL into this scene. Once
    * succssful scene proceeds to read each items into scene for visualisations.
-   * 
+   *
    * @param {String} url - Location of the metafile
    * @param {Function} finishCallback - Callback function which will be called
    * for each glyphset and geometry that has been written in.
@@ -483,7 +484,7 @@ exports.Scene = function (containerIn, rendererIn) {
   /**
    * Load a legacy model(s) format with the provided URLs and parameters. This only loads the geometry
    * without any of the metadata. Therefore, extra parameters should be provided.
-   * 
+   *
    * @deprecated
    */
   this.loadModelsURL = (urls, colours, opacities, timeEnabled, morphColour, finishCallback) => {
@@ -499,10 +500,10 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Load a legacy file format containing the viewport and its meta file from an external 
+   * Load a legacy file format containing the viewport and its meta file from an external
    * location provided by the url. Use the new metadata format with
    * {@link Zinc.Scene#loadMetadataURL} instead.
-   * 
+   *
    * @param {String} URL - address to the file containing viewport and model information.
    * @deprecated
    */
@@ -547,9 +548,9 @@ exports.Scene = function (containerIn, rendererIn) {
       return videoHandler.getCurrentTime(duration);
     }
     const time = rootRegion.getCurrentTime();
-    if (time !== -1) 
+    if (time !== -1)
       return time;
-    
+
     return 0;
   }
 
@@ -566,7 +567,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Check if any object in this scene is time varying.
-   * 
+   *
    * @return {Boolean}
    */
   this.isTimeVarying = () => {
@@ -681,8 +682,8 @@ exports.Scene = function (containerIn, rendererIn) {
       renderer.getSize(_markerTarget);
       if (this.minimapScissor.updateRequired) {
         scissor = getWindowsPosition(this.minimapScissor.align,
-          this.minimapScissor.x_offset, 
-          this.minimapScissor.y_offset, 
+          this.minimapScissor.x_offset,
+          this.minimapScissor.y_offset,
           this.minimapScissor.width,
           this.minimapScissor.height,
           _markerTarget.x, _markerTarget.y);
@@ -697,7 +698,7 @@ exports.Scene = function (containerIn, rendererIn) {
         scissor.x,
         scissor.y,
         this.minimapScissor.width,
-        this.minimapScissor.height); 
+        this.minimapScissor.height);
       minimap.updateCamera();
       if (this.displayMiniAxes) {
         renderer.render(miniAxesScene, minimap.camera);
@@ -728,8 +729,8 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Enable or disable interactive control, this is on by default.
-   * 
-   * @param {Boolean} flag - Indicate either interactive control 
+   *
+   * @param {Boolean} flag - Indicate either interactive control
    * should be enabled or disabled.
    */
   this.setInteractiveControlEnable = flag => {
@@ -777,7 +778,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Enable or disable stereo effect of this scene.
-   * @param {Boolean} stereoFlag - Indicate either stereo effect control 
+   * @param {Boolean} stereoFlag - Indicate either stereo effect control
    * should be enabled or disabled.
    */
   this.setStereoEffectEnable = stereoFlag => {
@@ -794,7 +795,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Check rather object is in scene.
-   * 
+   *
    * @return {Boolean}
    */
   this.objectIsInScene = zincObject => {
@@ -802,10 +803,10 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Rotate the camera view to view the entirety of the 
+   * Rotate the camera view to view the entirety of the
    * bounding box with a smooth transition within the providied
    * transitionTime.
-   * 
+   *
    * @param {THREE.Box3} boundingBox - the bounding box to target
    * @param {Number} transitionTime - Duration to perform the transition.
    */
@@ -837,10 +838,10 @@ exports.Scene = function (containerIn, rendererIn) {
 
 
   /**
-   * Translate the camera view to the center of the 
+   * Translate the camera view to the center of the
    * bounding box with a smooth transition within the providied
    * transitionTime.
-   * 
+   *
    * @param {THREE.Box3} boundingBox - the bounding box to target
    * @param {Number} transitionTime - Duration to perform the transition.
    */
@@ -858,9 +859,9 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Transition the camera into viewing the zinc object wiexports.Scene.alignBoundingBoxToCameraViewth a 
+   * Transition the camera into viewing the zinc object wiexports.Scene.alignBoundingBoxToCameraViewth a
    * smooth transition within the providied transitionTime.
-   * 
+   *
    * @param {ZincObject} zincObject - the bounding box to target
    * @param {Number} transitionTime - Duration to perform the transition.
    */
@@ -873,7 +874,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Set the camera to point to the centroid of the zinc object.
-   * 
+   *
    * @param {ZincObject} zincObject - the bounding box to target
    */
   this.setCameraTargetToObject = zincObject => {
@@ -939,7 +940,7 @@ exports.Scene = function (containerIn, rendererIn) {
   this.getPickableThreeJSObjects = () => {
     //The list will only be updated if changes have been made
     //in region or a flag has been raise
-    if (this.forcePickableObjectsUpdate || 
+    if (this.forcePickableObjectsUpdate ||
       rootRegion.checkPickableUpdateRequred(true)) {
       this.updatePickableThreeJSObjects();
     }
@@ -948,7 +949,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Get the Normalised coordinates on minimap if mouse event is
-   * inside the minimap 
+   * inside the minimap
    */
   this.getNormalisedMinimapCoordinates = (renderer, event) => {
     if (this.displayMinimap) {
@@ -956,7 +957,7 @@ exports.Scene = function (containerIn, rendererIn) {
       renderer.getSize(target);
       let offsetY = target.y - event.clientY;
       if (((scissor.x + this.minimapScissor.width) > event.clientX) &&
-        (event.clientX > scissor.x) && 
+        (event.clientX > scissor.x) &&
         ((scissor.y + this.minimapScissor.height) > offsetY) &&
         (offsetY > scissor.y)) {
           let x = ((event.clientX - scissor.x) /
@@ -1005,7 +1006,7 @@ exports.Scene = function (containerIn, rendererIn) {
   this.addMetadataTimeStamp = (key, time) => {
     metadata["TimeStamps"][key] = convertDurationObjectTomSec(time);
   }
-  
+
   /**
    * Get a specific metadata field.
    */
@@ -1048,8 +1049,8 @@ exports.Scene = function (containerIn, rendererIn) {
     this.setDuration(defaultDuration);
   }
 
-  // Turn the object into a readable string {years: years,months: months, 
-  // weeks: weeks, days: days, hours: hours, mins: mins, secs: secs } 
+  // Turn the object into a readable string {years: years,months: months,
+  // weeks: weeks, days: days, hours: hours, mins: mins, secs: secs }
   const convertDurationObjectToString = duration => {
     return [
       ...(duration.years ? [`${duration.years}years`] : []),
@@ -1062,8 +1063,8 @@ exports.Scene = function (containerIn, rendererIn) {
     ].join(' ');
   }
 
-  // Turn the object into a number representing milliesecond {years: years,months: months, 
-  // weeks: weeks, days: days, hours: hours, mins: mins, secs: secs } 
+  // Turn the object into a number representing milliesecond {years: years,months: months,
+  // weeks: weeks, days: days, hours: hours, mins: mins, secs: secs }
   const convertDurationObjectTomSec = duration => {
     return duration.years ? duration.years * 31536000000 : 0 +
       duration.months ? duration.months * 2592000000 : 0 +
@@ -1076,7 +1077,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   // Set the readable duration and timer using an object
   // with the following format {years: years,months: months, weeks: weeks, days: days,
-  // hours: hours, mins: mins, secs: secs } 
+  // hours: hours, mins: mins, secs: secs }
   this.setDurationFromObject = duration => {
     const string = convertDurationObjectToString(duration);
     const millisec = convertDurationObjectTomSec(duration);
@@ -1086,7 +1087,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   // Set the readable original duration using an object
   // with the following format {years: years,months: months, weeks: weeks, days: days,
-  // hours: hours, mins: mins, secs: secs } 
+  // hours: hours, mins: mins, secs: secs }
   this.setOriginalDurationFromObject = duration => {
     const string = convertDurationObjectToString(duration);
     this.setMetadataTag("OriginalDuration", string);
@@ -1095,10 +1096,10 @@ exports.Scene = function (containerIn, rendererIn) {
   /**
    * Export the scene in GLTF format, it can either return it in
    * string or binary form.
-   * 
+   *
    * @param {Boolean} binary - Indicate it should be exported as binary or
    * text.
-   * 
+   *
    * @return {Promise} The exported data if the promise resolve successfully
    */
   this.exportGLTF = (binary) => {
@@ -1108,7 +1109,7 @@ exports.Scene = function (containerIn, rendererIn) {
 
   /**
    * Get the root region of the scene.
-   * 
+   *
    * @return {Region} Return the root region of the scene
    */
   this.getRootRegion = () => {
@@ -1116,7 +1117,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Create points in region specified in the path 
+   * Create points in region specified in the path
    *
    */
   this.createLines = ( regionPath, groupName, coords, colour ) => {
@@ -1128,7 +1129,7 @@ exports.Scene = function (containerIn, rendererIn) {
   }
 
   /**
-   * Create points in region specified in the path 
+   * Create points in region specified in the path
    *
    */
   this.createPoints = ( regionPath, groupName, coords, labels, colour ) => {
@@ -1142,7 +1143,7 @@ exports.Scene = function (containerIn, rendererIn) {
 	/**
 	 * Add a callback function which will be called everytime zinc object is added.
 	 * @param {Function} callbackFunction - callbackFunction to be added.
-	 * 
+	 *
 	 * @return {Number}
 	 */
 	this.addZincObjectAddedCallbacks = callbackFunction => {
@@ -1154,7 +1155,7 @@ exports.Scene = function (containerIn, rendererIn) {
 	/**
 	 * Add a callback function which will be called everytime zinc object is removed.
 	 * @param {Function} callbackFunction - callbackFunction to be added.
-	 * 
+	 *
 	 * @return {Number}
 	 */
 	this.addZincObjectRemovedCallbacks = callbackFunction => {
@@ -1162,7 +1163,7 @@ exports.Scene = function (containerIn, rendererIn) {
 		zincObjectRemovedCallbacks[zincObjectRemovedCallbacks_id] = callbackFunction;
 		return zincObjectRemovedCallbacks_id;
 	}
-	
+
 	/**
 	 * Remove a callback function that is previously added to the scene.
 	 * @param {Number} id - identifier of the previously added callback function.
@@ -1246,6 +1247,28 @@ exports.Scene = function (containerIn, rendererIn) {
     const line = new (require("./three/line/LineSegments").LineSegments)(geometry, material);
     tempGroup.add(line);
     return line;
+  }
+
+
+  /*
+	 * Display frustum
+	 */
+  this.enableFrustumDisplay = () => {
+    if (this.camera && !cameraHelper) {
+      cameraHelper = new THREE.CameraHelper(this.camera);
+      scene.add(cameraHelper);
+    }
+  }
+
+  /*
+	 * Hide frustum
+	 */
+  this.disableFrustumDisplay = () => {
+    if (cameraHelper) {
+      scene.remove(cameraHelper);
+      cameraHelper.dispose();
+      cameraHelper = undefined;
+    }
   }
 
   /*
@@ -1371,7 +1394,7 @@ exports.Scene = function (containerIn, rendererIn) {
     if (axisDisplay.main) {
       this.enableAxisDisplay(false, false);
       axisDisplay.main.forEach(axis => {
-        if (axis.dispose) { 
+        if (axis.dispose) {
           axis.dispose();
         }
       });
@@ -1379,7 +1402,7 @@ exports.Scene = function (containerIn, rendererIn) {
     if (axisDisplay.mini) {
       this.enableAxisDisplay(false, true);
       axisDisplay.mini.forEach(axis => {
-        if (axis.dispose) { 
+        if (axis.dispose) {
           axis.dispose();
         }
       });
