@@ -136,11 +136,12 @@ const IndexedSourcesHandler = function(urlIn, crossOrigin, onDownloadedCallback)
   }
 }
 
-const MultiSourcesHandler = function(numberIn, onLoadCallback) {
+const MultiSourcesHandler = function(numberIn, onLoadCallback, options) {
   const allData = [];
   const number = numberIn;
   const onLoad = onLoadCallback;
   let totalDownloaded = 0;
+  const isGlyphData = options.isGlyphsets;
 
   this.itemDownloaded = (order, args) => {
     allData[order]= args;
@@ -148,7 +149,7 @@ const MultiSourcesHandler = function(numberIn, onLoadCallback) {
     if (totalDownloaded == number) {
       if (allData.length > 0) {
         //Assume when item length is one then it is a glyphset otherwise geometry
-        if (allData[0].length > 1) {
+        if (!isGlyphData) {
           const materials = allData[0][1];
           const geometries = allData.map((data) => data[0]);
           //All geometries will be merged into the first one
@@ -159,7 +160,9 @@ const MultiSourcesHandler = function(numberIn, onLoadCallback) {
           }
           onLoad(geometry, materials);
         } else {
-          const glyphData = allData.map((item) => JSON.parse(item[0]));
+          const glyphData = allData.map((item) => {
+            return JSON.parse(item[0])
+          });
           mergeGlyphData(glyphData);
           onLoad(glyphData[0]);
         }
@@ -182,7 +185,7 @@ exports.PrimitivesLoader = function () {
   //Load the first file then the rest will be handled separately
   const loadFromMultipleSources = (urls, onLoad, onProgress, onError, options) => {
     const number = urls.length;
-    const msHandler = new MultiSourcesHandler(number, onLoad);
+    const msHandler = new MultiSourcesHandler(number, onLoad, options);
     //The order here will give us hint on the sequence on merging the primitives
     let order = 0;
     urls.forEach((url) => {
