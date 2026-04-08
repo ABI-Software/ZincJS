@@ -198,9 +198,9 @@ Object.assign( JSONLoader.prototype, {
             geometry.uvs[i][k] = json.uvs[i][k];
 
           }
-          
+
         }
-        
+
       }
 
       if (normals) {
@@ -210,7 +210,7 @@ Object.assign( JSONLoader.prototype, {
           geometry.normals[i] = normals[i];
 
         }
-        
+
       }
 
       if (colors) {
@@ -220,7 +220,7 @@ Object.assign( JSONLoader.prototype, {
           geometry.colors[i] = colors[i];
 
         }
-        
+
       }
 
 
@@ -360,6 +360,11 @@ Object.assign( JSONLoader.prototype, {
 					face.a = faces[ offset ++ ];
 					face.b = faces[ offset ++ ];
 					face.c = faces[ offset ++ ];
+
+          //A hack to get things going
+          if (!face.b) face.b = face.a;
+          if (!face.c) face.c = face.b;
+
 
 					if ( hasMaterial ) {
 
@@ -671,23 +676,23 @@ Object.assign( JSONLoader.prototype, {
 
 				var materials = Loader.prototype.initMaterials( json.materials, texturePath, 'Anonymous' );
 
-				
+
 				if (json.materials[0].video) {
-					
+
 					var fullPath = texturePath + json.materials[0].video;
 
           if (this.paramsString) {
 
             fullPath = fullPath + `?${this.paramsString}`;
-            
+
           }
 
 					const videoHandler = new VideoHandler(fullPath);
-					
+
 					geometry._video = videoHandler;
-				
+
 				}
-				
+
 				if (materials && materials.length > 0) {
 					if (json.materials[0].singleSided) {
 						materials[0].side = THREE.FrontSide;
@@ -700,7 +705,7 @@ Object.assign( JSONLoader.prototype, {
             materials[0].shininess = Math.floor(json.materials[0].specularCoef / 3);
           }
 				}
-				
+
 				return { geometry: geometry, materials: materials };
 
 			}
