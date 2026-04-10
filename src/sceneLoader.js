@@ -239,7 +239,7 @@ exports.SceneLoader = function (sceneIn) {
     this.toBeDownloaded += 1;
     let isInline = options?.isInline ? options.isInline : false;
     let anatomicalId = options?.anatomicalId ? options.anatomicalId : undefined;
-    let renderOrder = options?.renderOrder ? options.renderOrder : undefined;
+    let renderOrder = (options && "renderOrder" in options) ? options.renderOrder : undefined;
 	  if (timeEnabled != undefined)
 		  localTimeEnabled = timeEnabled ? true : false;
 	  let localMorphColour = 0;
@@ -266,7 +266,7 @@ exports.SceneLoader = function (sceneIn) {
       let isInline  = (options && options.isInline) ? options.isInline : undefined;
       let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
       let displayLabels = (options && options.displayLabels) ? options.displayLabels : undefined;
-      let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+      let renderOrder = (options && "renderOrder" in options) ? options.renderOrder : undefined;
       const newGlyphset = new (require('./primitives/glyphset').Glyphset)();
       newGlyphset.setDuration(scene.getDuration());
       newGlyphset.groupName = groupName;
@@ -426,7 +426,7 @@ exports.SceneLoader = function (sceneIn) {
     let isInline = (options && options.isInline) ? options.isInline : false;
     let fileFormat = (options && options.fileFormat) ? options.fileFormat : undefined;
     let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
-    let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+    let renderOrder = (options && "renderOrder" in options) ? options.renderOrder : undefined;
     if (timeEnabled != undefined)
       localTimeEnabled = timeEnabled ? true : false;
     let localMorphColour = 0;
@@ -499,7 +499,7 @@ exports.SceneLoader = function (sceneIn) {
       localMorphColour = morphColour ? true : false;
     let isInline = (options && options.isInline) ? options.isInline : false;
     let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
-    let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+    let renderOrder = (options && "renderOrder" in options) ? options.renderOrder : undefined;
     if (isInline) {
       const object = primitivesLoader.parse( url );
       (pointsetloader(region, localTimeEnabled, localMorphColour, groupName,
@@ -514,7 +514,7 @@ exports.SceneLoader = function (sceneIn) {
   const loadTexture = (region, referenceURL, textureData, groupName, finishCallback, options) => {
     let isInline  = (options && options.isInline) ? options.isInline : undefined;
     let anatomicalId = (options && options.anatomicalId) ? options.anatomicalId : undefined;
-    let renderOrder = (options && options.renderOrder) ? options.renderOrder : undefined;
+    let renderOrder = (options && "renderOrder" in options) ? options.renderOrder : undefined;
     let newTexture = undefined;
     if (textureData) {
       if (referenceURL && textureData.images && textureData.images.source) {
