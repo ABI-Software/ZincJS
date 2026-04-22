@@ -1,13 +1,13 @@
 const THREE = require('three');
 
 /**
- * Zinc representation of glyph graphic, it contains the colours, 
+ * Zinc representation of glyph graphic, it contains the colours,
  * geometry and transformation of the glyph.
- * 
+ *
  * @param {THREE.Geometry} geometry - Geometry of the glyph .
  * @param {THREE.Material} materialIn - Material of the glyph.
  * @param {Number} idIn - Id of the glyph.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {Glyph}
@@ -153,7 +153,7 @@ const Glyph = function (geometry, materialIn, idIn, glyphsetIn) {
 
   /**
    * Set the color of the glyph and its label.
-   * 
+   *
    * @param {THREE.Color} color - Colour to be set.
    */
   this.setColour = (color) => {

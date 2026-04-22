@@ -2,11 +2,11 @@ const THREE = require('three');
 const JSONLoader = require('../loaders/JSONLoader').JSONLoader;
 
 /**
- * This is a container of {@link Glyph} and their graphical properties 
+ * This is a container of {@link Glyph} and their graphical properties
  * including transformations, colors, number of time steps, duration of animations
  * and group name. Please note that all glyphs in the glyphset share the same geometry
  * however they may have different transformations.
- * 
+ *
  * @class
  * @author Alan Wu
  * @return {Glyphset}
@@ -51,10 +51,10 @@ const Glyphset = function () {
   }
 
   /**
-   * Copy glyphset data into this glyphset then load the glyph's geoemtry 
+   * Copy glyphset data into this glyphset then load the glyph's geoemtry
    * with the provided glyphURL. FinishCallback will be called once
    * glyph is loaded.
-   * 
+   *
    * @param {Array} glyphsetData - contains the informations about the glyphs.
    * @param {String} glyphURL - URL to the geometry which will be applied to all
    * all the glyphs in the glyphset once loaded.
@@ -96,9 +96,9 @@ const Glyphset = function () {
   }
 
   /**
-   * Calculate the actual transformation value that can be applied 
+   * Calculate the actual transformation value that can be applied
    * to the transformation matrix.
-   * 
+   *
    * @returns {Array}
    */
   const resolve_glyph_axes = (point, axis1, axis2, axis3, scale, return_arrays) => {
@@ -130,7 +130,7 @@ const Glyphset = function () {
           mirrored_axis3[j] = -final_axis3[j];
           mirrored_point[j] = final_point[j];
           if (scale[0] < 0.0) {
-            // shift glyph origin to end of axis1 
+            // shift glyph origin to end of axis1
             final_point[j] -= final_axis1[j];
             mirrored_point[j] -= mirrored_axis1[j];
           }
@@ -396,6 +396,17 @@ const Glyphset = function () {
   };
 
   /**
+   * Get the assigned label for instance at index
+   */
+  this.getLabel = (index) => {
+    if (labels && labels.length > index) {
+      return labels[index];
+    }
+    return undefined;
+  }
+
+
+  /**
    * Display the label of the glyphs in the glyphset.
    */
   this.showLabel = () => {
@@ -415,7 +426,7 @@ const Glyphset = function () {
 
   /**
    * Create the glyphs in the glyphset.
-   * 
+   *
    * @param {Boolean} displayLabels -Flag to determine either the labels should be display or not.
    */
   const createGlyphs = (displayLabels) => {
@@ -448,7 +459,7 @@ const Glyphset = function () {
 
   /**
    * Add a custom {@link Glyph} to this {@link Glyphset}.
-   * 
+   *
    * @param {Glyph} Glyph to be added.
    */
   this.addCustomGlyph = glyph => {
@@ -460,7 +471,7 @@ const Glyphset = function () {
 
   /**
    * Add a THREE.Mesh object to be displayed as glyph in this {@link Glyphset}.
-   * 
+   *
    * @param {THREE.Mesh} Mesh to be added.
    * @param {Number} id of the mesh.
    */
@@ -480,7 +491,7 @@ const Glyphset = function () {
   /**
    * A function which iterates through the list of glyphs and call the callback
    * function with the glyph as the argument.
-   * 
+   *
    * @param {Function} callbackFunction - Callback function with the glyph
    * as an argument.
    */
@@ -565,7 +576,7 @@ const Glyphset = function () {
 
   /**
    * Get the bounding box for the whole set of glyphs.
-   * 
+   *
    * @return {Three.Box3};
    */
   this.getBoundingBox = () => {
@@ -597,7 +608,7 @@ const Glyphset = function () {
 
   /**
    * Set the local time of this glyphset.
-   * 
+   *
    * @param {Number} time - Can be any value between 0 to duration.
    */
   this.setMorphTime = time => {
@@ -616,19 +627,19 @@ const Glyphset = function () {
 
   /**
    * Check if the glyphset is time varying.
-   * 
+   *
    * @return {Boolean}
    */
   this.isTimeVarying = () => {
-    if (((this.ready === false) || (numberOfTimeSteps > 0)) && 
+    if (((this.ready === false) || (numberOfTimeSteps > 0)) &&
       (morphColours || morphVertices))
       return true;
     return false;
   }
 
   /**
-   * Get the current inbuild time of the 
-   * 
+   * Get the current inbuild time of the
+   *
    * @return {Number}
    */
   this.getCurrentTime = () => {
@@ -637,7 +648,7 @@ const Glyphset = function () {
 
   /**
    * Set the objects scale.
-   * 
+   *
    * @return {THREE.Box3}.
    */
   this.setScaleAll = function(scale) {
