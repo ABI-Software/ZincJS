@@ -82,6 +82,11 @@ const Glyph = function (geometry, materialIn, idIn, glyphsetIn) {
     if (labelString && (typeof labelString === 'string' || labelString instanceof String)) {
       label = new (require('./label').Label)(labelString, colour);
       label.setPosition(_position[0], _position[1], _position[2]);
+      const sprite = label.getSprite();
+      sprite.material.alphaTest = 0.5;
+      sprite.material.transparent = true;
+      sprite.material.depthWrite = false;
+      sprite.material.depthTest = labelDepthTest;
       this.group.add(label.getSprite());
     }
   }
