@@ -86,7 +86,6 @@ const Glyph = function (geometry, materialIn, idIn, glyphsetIn) {
       sprite.material.alphaTest = 0.5;
       sprite.material.transparent = true;
       sprite.material.depthWrite = false;
-      sprite.material.depthTest = labelDepthTest;
       this.group.add(label.getSprite());
     }
   }
